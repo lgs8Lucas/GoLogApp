@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/presentation/screen/delivery_route/delivery_route_screen.dart';
 import 'package:gologapp/presentation/screen/login/login_screen.dart'; // Ajuste o path
 import 'package:gologapp/util/styles.dart';
 import 'package:gologapp/presentation/screen/route/route_screen.dart'; // Ajuste o path
@@ -27,6 +28,11 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/route_screen',
           page: () => const RouteScreen(),
+          transition: Transition.fadeIn,
+        ),
+        GetPage(
+          name: '/delivery_route',
+          page: () => DeliveryRouteScreen(),
           transition: Transition.fadeIn,
         ),
       ],

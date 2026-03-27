@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/controller/login_controller.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:gologapp/presentation/screen/route/route_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

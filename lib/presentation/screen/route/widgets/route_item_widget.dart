@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:gologapp/util/styles.dart';
 
 class RouteItemWidget extends StatelessWidget {

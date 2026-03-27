@@ -60,7 +60,12 @@ class RouteScreen extends StatelessWidget {
                     child: ListView.builder(
                       itemCount: 10,
                       itemBuilder: (context, index) {
-                        return const RouteItemWidget();
+                        return GestureDetector(
+                          child: const RouteItemWidget(),
+                          onTap: () {
+                            Get.toNamed('/delivery_route');
+                          },
+                        );
                       },
                     ),
                   ),
