@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/controllers/login_controller.dart';
+import 'package:gologapp/presentation/controller/login_controller.dart';
 import 'package:gologapp/util/styles.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -118,11 +118,11 @@ class LoginScreen extends StatelessWidget {
 
                   const SizedBox(height: 40),
 
-                  // --- BOTÃO ENTRAR ---
+                  
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Exemplo de navegação GetX: Get.toNamed('/home');
+                        Get.toNamed('/route_screen'); // Navega para a tela de rotas
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Styles.COLOR_GRAY,
