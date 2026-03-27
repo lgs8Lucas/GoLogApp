@@ -7,6 +7,11 @@ import 'package:latlong2/latlong.dart';
 class DeliveryController extends GetxController {
   var progress = 0.15.obs;
   var timeLeft = "1m 45s".obs;
+  var routeNumber = 1.obs;
+  var deliveryNumber = 1.obs;
+  var deliveryDate = DateTime.now().obs;
+  var recipient = "Lucas Gonçalves Silva".obs;
+  var address = "Rua X, Jardim ABC, 1455".obs;
 }
 
 class DeliveryRouteScreen extends StatelessWidget {
@@ -18,58 +23,51 @@ class DeliveryRouteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Styles.COLOR_BLACKBLUE,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Styles.COLOR_BACKGROUND,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildDeliveryInfo(),
-                      Expanded(child: _buildMapSection()),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            "Rota #001",
-            style: TextStyle(
-              color: Styles.COLOR_WHITE,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
+      appBar: AppBar(
+        title: Text(
+          'Rota #${controller.routeNumber.value.toString().padLeft(3, '0')}',
+          style: TextStyle(
+            color: Styles.COLOR_WHITE,
+            fontWeight: FontWeight.bold,
           ),
+        ),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
           IconButton(
             icon: const Icon(
               Icons.reply,
               color: Styles.COLOR_LIGHTGREEN,
-              size: 30,
+              size: 28,
             ),
             onPressed: () => Get.back(),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: 5),
+              decoration: BoxDecoration(
+                color: Styles.COLOR_BACKGROUND,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                ),
+                child: Column(
+                  children: [
+                    _buildDeliveryInfo(),
+                    Expanded(child: _buildMapSection()),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -83,13 +81,15 @@ class DeliveryRouteScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Entrega X",
+          Text(
+            "Entrega #${controller.deliveryNumber.value.toString().padLeft(3, '0')}",
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 12),
-          _infoRow("Rua X, Jardim ABC, 1455."),
-          _infoRow("Data prevista: 30/11/2025 : 14:30."),
+          _infoRow(controller.address.value),
+          _infoRow(
+            "Data prevista: ${controller.deliveryDate.value.day}/${controller.deliveryDate.value.month}/${controller.deliveryDate.value.year}",
+          ),
           Row(
             children: [
               const Text(
@@ -108,7 +108,7 @@ class DeliveryRouteScreen extends StatelessWidget {
               ),
             ],
           ),
-          _infoRow("Destinatário: Lucas Gonçalves"),
+          _infoRow("Destinatário: ${controller.recipient.value}"),
           const SizedBox(height: 15),
           Column(
             children: [
@@ -154,39 +154,45 @@ class DeliveryRouteScreen extends StatelessWidget {
     final LatLng loc = const LatLng(-22.3572, -47.3846);
     return Stack(
       children: [
-        FlutterMap(
-          options: MapOptions(
-            initialCenter: loc,
-            initialZoom: 14.5,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.all,
-            ),
+        ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
-          children: [
-            TileLayer(
-              urlTemplate:
-                  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-              subdomains: const ['a', 'b', 'c', 'd'],
-              userAgentPackageName: 'com.example.gologapp',
+          child: FlutterMap(
+            options: MapOptions(
+              initialCenter: loc,
+              initialZoom: 14.5,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all,
+              ),
             ),
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: loc,
-                  width: 50,
-                  height: 50,
-                  child: Transform.rotate(
-                    angle: 0.5, 
-                    child: const Icon(
-                      Icons.navigation,
-                      color: Colors.blueAccent,
-                      size: 40,
+            children: [
+              TileLayer(
+                urlTemplate:
+                    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+                userAgentPackageName: 'com.example.gologapp',
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: loc,
+                    width: 50,
+                    height: 50,
+                    child: Transform.rotate(
+                      angle: 0.5,
+                      child: const Icon(
+                        Icons.navigation,
+                        color: Colors.blueAccent,
+                        size: 40,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
         Positioned(
           bottom: 20,
