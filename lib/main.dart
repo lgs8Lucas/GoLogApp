@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/screens/login_screen.dart'; // Ajuste o path
+import 'package:gologapp/presentation/screen/login/login_screen.dart'; // Ajuste o path
 import 'package:gologapp/util/styles.dart';
+import 'package:gologapp/presentation/screen/route/route_screen.dart'; // Ajuste o path
 
 void main() {
   runApp(const MyApp());
@@ -13,8 +14,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'GoLog',
-      theme: ThemeData(scaffoldBackgroundColor: Styles.COLOR_WHITE),
+      theme: ThemeData(scaffoldBackgroundColor: Styles.COLOR_BACKGROUND),
       initialRoute: '/login',
       getPages: [
         GetPage(
@@ -22,13 +24,11 @@ class MyApp extends StatelessWidget {
           page: () => const LoginScreen(),
           transition: Transition.fadeIn,
         ),
-        /*
         GetPage(
-          name: '/home',
-          page: () => const HomeScreen(),
-          binding: HomeBinding(), // Se usar injeção de dependência organizada
+          name: '/route_screen',
+          page: () => const RouteScreen(),
+          transition: Transition.fadeIn,
         ),
-        */
       ],
     );
   }
