@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/presentation/screen/events/event_page.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -154,45 +155,39 @@ class DeliveryRouteScreen extends StatelessWidget {
     final LatLng loc = const LatLng(-22.3572, -47.3846);
     return Stack(
       children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-          child: FlutterMap(
-            options: MapOptions(
-              initialCenter: loc,
-              initialZoom: 14.5,
-              interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.all,
-              ),
+        FlutterMap(
+          options: MapOptions(
+            initialCenter: loc,
+            initialZoom: 14.5,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.all,
             ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
-                userAgentPackageName: 'com.example.gologapp',
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: loc,
-                    width: 50,
-                    height: 50,
-                    child: Transform.rotate(
-                      angle: 0.5,
-                      child: const Icon(
-                        Icons.navigation,
-                        color: Colors.blueAccent,
-                        size: 40,
-                      ),
+          ),
+          children: [
+            TileLayer(
+              urlTemplate:
+                  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+              subdomains: const ['a', 'b', 'c', 'd'],
+              userAgentPackageName: 'com.example.gologapp',
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: loc,
+                  width: 50,
+                  height: 50,
+                  child: Transform.rotate(
+                    angle: 0.5,
+                    child: const Icon(
+                      Icons.navigation,
+                      color: Colors.blueAccent,
+                      size: 40,
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
         Positioned(
           bottom: 20,
@@ -206,7 +201,12 @@ class DeliveryRouteScreen extends StatelessWidget {
                     child: _actionButton(
                       "Registrar entrega",
                       Styles.COLOR_LIGHTGREEN,
-                      () {},
+                      () {
+                        Get.to(
+                          () => OccurrenceActionScreen(),
+                          arguments: ActionType.signature,
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 15),
@@ -214,7 +214,12 @@ class DeliveryRouteScreen extends StatelessWidget {
                     child: _actionButton(
                       "Registrar Ocorrência",
                       Styles.COLOR_ORANGE,
-                      () {},
+                      () {
+                        Get.to(
+                          () => OccurrenceActionScreen(),
+                          arguments: ActionType.observation,
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -222,7 +227,12 @@ class DeliveryRouteScreen extends StatelessWidget {
               const SizedBox(height: 15),
               SizedBox(
                 width: 200,
-                child: _actionButton("Encerrar Rota", Styles.COLOR_RED, () {}),
+                child: _actionButton("Encerrar Rota", Styles.COLOR_RED, () {
+                  Get.to(
+                    () => OccurrenceActionScreen(),
+                    arguments: ActionType.observation,
+                  );
+                }),
               ),
             ],
           ),
