@@ -8,7 +8,6 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Injetando o controller na memória
     final LoginController controller = Get.put(LoginController());
 
     return Scaffold(

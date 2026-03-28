@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:gologapp/util/styles.dart';
+import 'package:gologapp/presentation/controller/route_controller.dart';
 
 class RouteItemWidget extends StatelessWidget {
   const RouteItemWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final RouteController controller = Get.put(RouteController());
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: const BoxDecoration(
@@ -30,16 +33,21 @@ class RouteItemWidget extends StatelessWidget {
                 ),
                 Text(
                   "Início previsto: 30/11/2025 14:30",
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
                 Text(
                   "Entregas: 4",
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_right, color: Colors.grey),
+          IconButton(
+            icon: const Icon(Icons.arrow_right, color: Styles.COLOR_GRAY),
+            onPressed: () {
+              controller.goToDetaisl();
+            },
+          ),
         ],
       ),
     );
