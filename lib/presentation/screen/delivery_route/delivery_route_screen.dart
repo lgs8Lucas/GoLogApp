@@ -42,7 +42,9 @@ class DeliveryRouteScreen extends StatelessWidget {
               color: Styles.COLOR_LIGHTGREEN,
               size: 28,
             ),
-            onPressed: () => Get.back(),
+            onPressed: () {
+              Get.offAllNamed('/route_datails');
+            },
           ),
         ],
       ),

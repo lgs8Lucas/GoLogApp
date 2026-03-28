@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
           transition: Transition.fadeIn,
         ),
         GetPage(
-          name: '/route_datails_screen',
+          name: '/route_datails',
           page: () => const RouteDetailsScreen(),
           transition: Transition.fadeIn,
         ),
