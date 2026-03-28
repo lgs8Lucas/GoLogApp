@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/presentation/screen/route_details/widget/map.dart';
+import 'package:gologapp/presentation/screen/route_details/widget/map_widget.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:latlong2/latlong.dart'; // Sem isso, o LatLng fica vermelho
+import 'package:latlong2/latlong.dart';
+import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
 
 class RouteDetailsScreen extends StatelessWidget {
   const RouteDetailsScreen({super.key});
@@ -26,7 +27,7 @@ class RouteDetailsScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(
-              Icons.logout,
+              Icons.reply,
               color: Styles.COLOR_LIGHTGREEN,
               size: 28,
             ),
@@ -57,7 +58,7 @@ class RouteDetailsScreen extends StatelessWidget {
                           const Icon(Icons.local_shipping, size: 35),
                           const SizedBox(width: 10),
                           const Text(
-                            "EZP7A66",
+                            "ERP-0D22",
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
@@ -80,21 +81,36 @@ class RouteDetailsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 5),
                   const MapWidget(
                     center: LatLng(-22.3575, -47.3846),
                     height: 300,
                   ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        "Entregas",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.map,
-                      color: Styles.COLOR_LIGHTGREEN,
-                      size: 28,
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: 4,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          child: const RouteItemDetails(),
+                          onTap: () {
+                            Get.toNamed('/delivery_route');
+                          },
+                        );
+                      },
                     ),
-                    onPressed: () {
-                      Get.offAllNamed('/delivery_route');
-                    },
                   ),
                 ],
               ),

@@ -12,7 +12,7 @@ class DeliveryController extends GetxController {
   var deliveryNumber = 1.obs;
   var deliveryDate = DateTime.now().obs;
   var recipient = "Lucas Gonçalves Silva".obs;
-  var address = "Rua X, Jardim ABC, 1455".obs;
+  var address = "Av. Dr. Maximiliano Baruto, 500".obs;
 }
 
 class DeliveryRouteScreen extends StatelessWidget {
