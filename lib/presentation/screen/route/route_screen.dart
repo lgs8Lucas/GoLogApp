@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/util/styles.dart';
-import 'widgets/route_item_widget.dart';
+import 'widgets/route_item.dart';
+import 'package:gologapp/presentation/screen/route/widgets/route_item.dart';
 
 class RouteScreen extends StatelessWidget {
   const RouteScreen({super.key});
