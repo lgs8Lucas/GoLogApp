@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/screen/route_details/widget/map_widget.dart';
 import 'package:gologapp/util/styles.dart';

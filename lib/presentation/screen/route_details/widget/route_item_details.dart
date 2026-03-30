@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:gologapp/presentation/controller/route_detials_controller.dart';
+import 'package:gologapp/presentation/controller/route_details_controller.dart';
 
 class RouteItemDetails extends StatelessWidget {
   const RouteItemDetails({super.key});
