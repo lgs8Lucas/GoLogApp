@@ -1,87 +1,66 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:gologapp/data/repository/auth_repository.dart';
 import 'package:gologapp/util/styles.dart';
 
 class LoginController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
   var isLoading = false.obs;
   var obscurePassword = true.obs;
   var keepConnected = true.obs;
 
-  final String _baseUrl =
-      'http://localhost:8080/login'; // 'http://10.0.2.2:8081/login' -> Para emulador Android, 'http://localhost:8081/login' -> Para Linux
+  final AuthRepository _authRepository;
+  LoginController(this._authRepository);
 
+  @override
   void togglePasswordVisibility() => obscurePassword.toggle();
-
   void toggleKeepConnected(bool? value) => keepConnected.value = value ?? false;
 
   Future<void> login() async {
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
+    final email = emailController.text;
+    final password = passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      Get.snackbar(
-        'Campo Vazio',
-        'Por favor, preencha todos os campos',
-        backgroundColor: Styles.COLOR_WHITE,
-        colorText: Styles.COLOR_RED,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _showErrorSnackbar('Campo vazio', 'Por favor preencha todos os campos');
       return;
     }
 
     try {
       isLoading.value = true;
+      final user = await _authRepository.login(email, password);
 
-      final response = await http
-          .post(
-            Uri.parse(_baseUrl),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'email': email, 'password': password}),
-          )
-          .timeout(const Duration(seconds: 8));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        String token = data['token'];
-        String mensagemDeErro = 'Erro desconhecido';
-
-        Get.snackbar(
-          'Sucesso',
-          'Bem vindo ao GoLog!',
-          backgroundColor: Styles.COLOR_WHITE,
-          colorText: Colors.green,
-        );
-        Get.offNamed('/route_screen');
-      } else {
-        String mensagemDeErro = 'Erro desconhecido';
-
-        try {
-          final errorData = jsonDecode(response.body);
-          mensagemDeErro = errorData['message'] ?? 'Falha na autenticação';
-        } catch (e) {
-          mensagemDeErro = 'Erro no servidor: ${response.statusCode}';
-        }
-        Get.snackbar(
-          'Falha no Login',
-          mensagemDeErro,
-          backgroundColor: Styles.COLOR_WHITE,
-          colorText: Styles.COLOR_RED,
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
+      _showSuccessSnackbar('Sucesso', 'Bem-vindo ao GoLogApp, ${user.name}!');
+      Get.offAllNamed('/route_screen');
     } catch (e) {
-      Get.snackbar(
-        'Erro de Conexão',
-        'Verifique se o backend está rodando no Docker.',
+      _showErrorSnackbar(
+        'Falho no Login',
+        e.toString().replaceAll('Exception: ', ''),
       );
-      print("Erro detalhado: $e");
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _showErrorSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: Styles.COLOR_WHITE,
+      colorText: Styles.COLOR_RED,
+      snackPosition: SnackPosition.BOTTOM,
+      icon: const Icon(Icons.error, color: Styles.COLOR_RED),
+    );
+  }
+
+  void _showSuccessSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: Styles.COLOR_WHITE,
+      colorText: Colors.green,
+      snackPosition: SnackPosition.BOTTOM,
+      icon: const Icon(Icons.check, color: Colors.green),
+    );
   }
 }

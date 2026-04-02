@@ -13,6 +13,7 @@ class OccurrenceActionController extends GetxController {
       currentAction.value = Get.arguments;
     }
   }
+
   @override
   void onClose() {
     observationTextController.dispose();
