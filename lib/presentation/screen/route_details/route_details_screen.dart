@@ -76,6 +76,16 @@ class RouteDetailsScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          const SizedBox(width: 8), // Espaçamento extra
+                          // NOVO BOTÃO AQUI
+                          IconButton(
+                            onPressed: () => _showLoadingOrderModal(context),
+                            icon: const Icon(
+                              Icons.format_list_numbered_rounded,
+                              color: Styles.COLOR_LIGHTGREEN,
+                              size: 30,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -117,6 +127,98 @@ class RouteDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showLoadingOrderModal(BuildContext context) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Styles.COLOR_BACKGROUND,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[600],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            const Text(
+              "Ordem de Carregamento",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black, // Ajuste conforme seu Styles
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "LIFO: O último a entrar é o primeiro a sair",
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            // Lista de itens simulada
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: 4,
+                itemBuilder: (context, index) {
+                  return Card(
+                    elevation: 0,
+                    color: Colors.white,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Styles.COLOR_LIGHTGREEN,
+                        child: Text(
+                          "${index + 1}º",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      title: Text("Entrega #00${4 - index}"),
+                      subtitle: const Text("Peso: 150kg | Volume: 2.5m³"),
+                      trailing: const Icon(Icons.drag_handle),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Styles.COLOR_BLACKBLUE,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => Get.back(),
+                child: const Text(
+                  "ENTENDIDO",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }
