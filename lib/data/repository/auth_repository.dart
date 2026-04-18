@@ -17,7 +17,8 @@ class AuthRepository {
     if (response.statusCode == 200) {
       final String token = data['token'];
       await _storage.write('jwt_token', token);
-      return User(id: "0", name: 'User Master', email: email);
+      final user = User(id: "0", name: 'User Master', email: email);
+      return user;
     } else {
       throw Exception(data['message'] ?? 'Falha na autenticação');
     }

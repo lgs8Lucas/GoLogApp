@@ -9,6 +9,8 @@ import 'package:gologapp/presentation/screen/route/route_screen.dart';
 import 'package:gologapp/presentation/screen/delivery_route/delivery_route_screen.dart';
 import 'package:gologapp/presentation/screen/route_details/route_details_screen.dart';
 import 'package:gologapp/util/styles.dart';
+import 'package:gologapp/data/datasource/local/sql_service.dart';
+
 // Ajuste o path
 
 void main() async {
@@ -19,6 +21,7 @@ void main() async {
   Get.put(ApiService());
   Get.put(AuthApi(Get.find<ApiService>()));
   Get.put(AuthRepository(Get.find<AuthApi>()));
+  await Get.putAsync(() async => SqlService());
 
   runApp(const MyApp());
 }
