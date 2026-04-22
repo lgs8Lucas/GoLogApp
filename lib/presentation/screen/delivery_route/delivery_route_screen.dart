@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/screen/events/event_page.dart';
+import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -154,42 +154,11 @@ class DeliveryRouteScreen extends StatelessWidget {
   }
 
   Widget _buildMapSection() {
-    final LatLng loc = const LatLng(-22.3572, -47.3846);
     return Stack(
       children: [
-        FlutterMap(
-          options: MapOptions(
-            initialCenter: loc,
-            initialZoom: 14.5,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.all,
-            ),
-          ),
-          children: [
-            TileLayer(
-              urlTemplate:
-                  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-              subdomains: const ['a', 'b', 'c', 'd'],
-              userAgentPackageName: 'com.example.gologapp',
-            ),
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: loc,
-                  width: 50,
-                  height: 50,
-                  child: Transform.rotate(
-                    angle: 0.5,
-                    child: const Icon(
-                      Icons.navigation,
-                      color: Colors.blueAccent,
-                      size: 40,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+        MapUtils.getMap(
+          centerPosition: const LatLng(-47.3846, -22.3572),
+          truckPosition: const LatLng(-47.3732, -22.3705),
         ),
         Positioned(
           bottom: 20,

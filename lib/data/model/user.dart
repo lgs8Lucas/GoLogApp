@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
 class User {
   static final String tableName = 'user';
   static final String columnId = 'id';
