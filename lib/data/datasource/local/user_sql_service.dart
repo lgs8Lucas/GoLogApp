@@ -30,6 +30,11 @@ class UserSqlService extends GetxService {
     );
   }
 
+  Future<int> deleteAllUsers({Transaction? txn}) async {
+    if (txn != null) return await txn.delete(User.tableName);
+    return await _db.delete(User.tableName);
+  }
+
   Future<int> updateUser(Map<String, dynamic> row, {Transaction? txn}) async {
     if (txn != null)
       return await txn.update(

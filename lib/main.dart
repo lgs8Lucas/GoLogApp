@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:gologapp/data/datasource/local/user_sql_service.dart';
 import 'package:gologapp/data/datasource/remote/api_service.dart';
 import 'package:gologapp/data/datasource/remote/auth_api_service.dart';
 import 'package:gologapp/data/repository/auth_repository.dart';
@@ -18,10 +19,12 @@ void main() async {
 
   await GetStorage.init();
 
+  await Get.putAsync(() async => SqlService());
+  await Get.putAsync(() async => Get.find<SqlService>().initDB());
+  await Get.putAsync(() async => UserSqlService());
   Get.put(ApiService());
   Get.put(AuthApi(Get.find<ApiService>()));
   Get.put(AuthRepository(Get.find<AuthApi>()));
-  await Get.putAsync(() async => SqlService());
 
   runApp(const MyApp());
 }

@@ -41,6 +41,8 @@ class SqlService extends GetxService {
       CREATE TABLE IF NOT EXISTS ${User.tableName} (
         ${User.columnId} TEXT PRIMARY KEY,
         ${User.columnName} TEXT,
+        ${User.columnToken} TEXT,
+        ${User.columnKeepConnected} INTEGER,
         ${User.columnEmail} TEXT
       )
     ''');

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final String _baseUrl =
-      'http://localhost:8081'; // 'http://10.0.2.2:8081' -> Para emulador Android // Subir Container Atualizado com tratamento de exceções
+      'http://192.168.3.35:8081'; // 'http://10.0.2.2:8081' -> Para emulador Android // Subir Container Atualizado com tratamento de exceções
 
   Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
     final url = Uri.parse('$_baseUrl$endpoint');
