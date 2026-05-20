@@ -63,7 +63,7 @@ class RouteScreen extends StatelessWidget {
                         return GestureDetector(
                           child: const RouteItemWidget(),
                           onTap: () {
-                            Get.toNamed('/route_datails');
+                            Get.toNamed('/route_details');
                           },
                         );
                       },

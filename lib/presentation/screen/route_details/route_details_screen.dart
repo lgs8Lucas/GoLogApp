@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
 
 class RouteDetailsScreen extends StatelessWidget {
-  const RouteDetailsScreen({super.key});
+  RouteDetailsScreen({super.key});
+  
+  final LocationController locationController = Get.find<LocationController>();
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +96,7 @@ class RouteDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 5),
                   FutureBuilder<Widget>(
                     future: MapUtils.getRouteMap(
+                      truckPosition: LatLng(-22.3705, -47.3732),
                       centerPosition: LatLng(-22.3575, -47.3846),
                       height: 300,
                     ),

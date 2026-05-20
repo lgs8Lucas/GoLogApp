@@ -5,6 +5,7 @@ import 'package:gologapp/data/datasource/local/user_sql_service.dart';
 import 'package:gologapp/data/datasource/remote/api_service.dart';
 import 'package:gologapp/data/datasource/remote/auth_api_service.dart';
 import 'package:gologapp/data/repository/auth_repository.dart';
+import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/screen/login/login_screen.dart';
 import 'package:gologapp/presentation/screen/route/route_screen.dart';
 import 'package:gologapp/presentation/screen/delivery_route/delivery_route_screen.dart';
@@ -25,7 +26,7 @@ void main() async {
   Get.put(ApiService());
   Get.put(AuthApi(Get.find<ApiService>()));
   Get.put(AuthRepository(Get.find<AuthApi>()));
-
+  Get.put(LocationController(), permanent: true);
   runApp(const MyApp());
 }
 
@@ -56,8 +57,8 @@ class MyApp extends StatelessWidget {
           transition: Transition.fadeIn,
         ),
         GetPage(
-          name: '/route_datails',
-          page: () => const RouteDetailsScreen(),
+          name: '/route_details',
+          page: () => RouteDetailsScreen(),
           transition: Transition.fadeIn,
         ),
       ],

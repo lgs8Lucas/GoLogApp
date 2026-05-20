@@ -58,6 +58,7 @@ class MapUtils {
 
   static Future<Widget> getRouteMap({
     required LatLng centerPosition,
+    required LatLng truckPosition,
     int height = 350,
   }) async {
     const url =
@@ -69,12 +70,9 @@ class MapUtils {
         final data = json.decode(response.body);
         final List coords = data['routes'][0]['geometry']['coordinates'];
         final routePoints = coords.map((c) => LatLng(c[1], c[0])).toList();
-        final vehicleLocation = routePoints.isEmpty
-            ? LatLng(-47.3846, -22.3572)
-            : routePoints[0];
         return getMap(
           centerPosition: centerPosition,
-          truckPosition: vehicleLocation,
+          truckPosition: truckPosition,
           routePoints: routePoints,
           height: height,
         );
@@ -84,7 +82,7 @@ class MapUtils {
     }
     return getMap(
       centerPosition: centerPosition,
-      truckPosition: centerPosition,
+      truckPosition: truckPosition,
       height: height,
     );
   }

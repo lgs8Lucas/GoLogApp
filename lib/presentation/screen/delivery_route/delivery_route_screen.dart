@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/screen/events/event_page.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
@@ -17,6 +18,7 @@ class DeliveryController extends GetxController {
 
 class DeliveryRouteScreen extends StatelessWidget {
   final controller = Get.put(DeliveryController());
+  final LocationController locationController = Get.find<LocationController>();
 
   DeliveryRouteScreen({super.key});
 
@@ -43,7 +45,7 @@ class DeliveryRouteScreen extends StatelessWidget {
               size: 28,
             ),
             onPressed: () {
-              Get.offAllNamed('/route_datails');
+              Get.offAllNamed('/route_details');
             },
           ),
         ],
@@ -66,7 +68,7 @@ class DeliveryRouteScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildDeliveryInfo(),
-                    Expanded(child: _buildMapSection()),
+                    Expanded(child: _buildMapSection(locationController)),
                   ],
                 ),
               ),
@@ -153,12 +155,12 @@ class DeliveryRouteScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMapSection() {
+  Widget _buildMapSection(LocationController locationController) {
     return Stack(
       children: [
         MapUtils.getMap(
-          centerPosition: const LatLng(-47.3846, -22.3572),
-          truckPosition: const LatLng(-47.3732, -22.3705),
+          centerPosition: locationController.myPosition ?? const LatLng(-47.3846, -22.3572),
+          truckPosition: locationController.myPosition ?? const LatLng(-47.3732, -22.3705),
         ),
         Positioned(
           bottom: 20,
