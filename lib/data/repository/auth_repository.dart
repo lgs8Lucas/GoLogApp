@@ -25,6 +25,7 @@ class AuthRepository {
         email: email,
         token: token,
         keepConnected: true,
+        password: password,
       );
       await _userSqlService.deleteAllUsers();
       await _userSqlService.insertUser(user.toDb());

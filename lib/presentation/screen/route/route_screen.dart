@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/presentation/controller/login_controller.dart';
 import 'package:gologapp/util/styles.dart';
 import 'widgets/route_item.dart';
 
@@ -8,6 +9,7 @@ class RouteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final LoginController loginController = Get.find<LoginController>();
     return Scaffold(
       backgroundColor: Styles.COLOR_BLACKBLUE,
       appBar: AppBar(
@@ -28,8 +30,8 @@ class RouteScreen extends StatelessWidget {
               color: Styles.COLOR_LIGHTGREEN,
               size: 28,
             ),
-            onPressed: () {
-              Get.offAllNamed('/login');
+            onPressed: () async {
+              await loginController.logout();
             },
           ),
         ],

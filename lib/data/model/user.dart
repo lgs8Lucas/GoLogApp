@@ -4,6 +4,7 @@ class User {
   static final String columnName = 'name';
   static final String columnEmail = 'email';
   static final String columnToken = 'token';
+  static final String columnPassword = 'password';
   static final String columnKeepConnected = 'keepConnected';
 
   final String id;
@@ -11,6 +12,7 @@ class User {
   final String email;
   final String token;
   final bool keepConnected;
+  final String password;
 
   User({
     required this.id,
@@ -18,6 +20,7 @@ class User {
     required this.email,
     required this.token,
     required this.keepConnected,
+    required this.password,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -26,6 +29,7 @@ class User {
       name: json[columnName],
       email: json[columnEmail],
       token: json[columnToken],
+      password: json[columnPassword],
       keepConnected: true,
     );
   }
@@ -36,6 +40,7 @@ class User {
       columnName: name,
       columnEmail: email,
       columnToken: token,
+      columnPassword: password,
       columnKeepConnected: keepConnected ? 1 : 0,
     };
   }
@@ -47,6 +52,7 @@ class User {
       email: db[columnEmail],
       token: db[columnToken],
       keepConnected: db[columnKeepConnected] == 1,
+      password: db[columnPassword],
     );
   }
 }

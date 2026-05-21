@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/controller/login_controller.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:gologapp/data/repository/auth_repository.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final LoginController controller = Get.put(
-      LoginController(Get.find<AuthRepository>()),
-    );
+    final LoginController controller = Get.find<LoginController>();
 
     return Scaffold(
       body: SingleChildScrollView(

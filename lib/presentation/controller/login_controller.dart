@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/data/datasource/local/user_sql_service.dart';
+import 'package:gologapp/data/model/user.dart';
 import 'package:gologapp/data/repository/auth_repository.dart';
 import 'package:gologapp/util/styles.dart';
 
@@ -11,9 +13,9 @@ class LoginController extends GetxController {
   var keepConnected = true.obs;
 
   final AuthRepository _authRepository;
-  LoginController(this._authRepository);
+  final UserSqlService _userSqlService;
+  LoginController(this._authRepository, this._userSqlService);
 
-  @override
   void togglePasswordVisibility() => obscurePassword.toggle();
   void toggleKeepConnected(bool? value) => keepConnected.value = value ?? false;
 
@@ -62,5 +64,35 @@ class LoginController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
       icon: const Icon(Icons.check, color: Colors.green),
     );
+  }
+
+  Future<String> tryKeepConnected() async {
+    final user = (await _userSqlService.getAllUsers()).firstOrNull;
+    if (user == null || user[User.columnKeepConnected] != 1) return '/login';
+    final email = user[User.columnEmail] ?? '';
+    final password = user[User.columnPassword] ?? '';
+
+    if (email.isEmpty || password.isEmpty) {
+      return '/login';
+    }
+
+    try {
+      isLoading.value = true;
+      await _authRepository.login(email, password);
+      return '/route_screen';
+    } catch (e) {
+      _showErrorSnackbar(
+        'Falho no Login',
+        e.toString().replaceAll('Exception: ', ''),
+      );
+      return '/login';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> logout() async {
+    await _userSqlService.deleteAllUsers();
+    Get.offAllNamed('/login');
   }
 }

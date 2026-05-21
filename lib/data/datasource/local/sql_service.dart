@@ -1,15 +1,25 @@
+import 'package:gologapp/data/model/coordinate.dart';
+import 'package:gologapp/data/model/delivery.dart';
+import 'package:gologapp/data/model/occurrence.dart';
+import 'package:gologapp/data/model/transport.dart';
 import 'package:gologapp/data/model/user.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:get/get.dart';
 
 class SqlService extends GetxService {
-  static final List<String> tables = [User.tableName];
+  static final List<String> tables = [
+    User.tableName,
+    Coordinate.tableName,
+    Occurrence.tableName,
+    Delivery.tableName,
+    Transport.tableName,
+  ];
   static SqlService get to => Get.find();
 
   late Database _db;
   final String _dbName = "golog.db";
-  final int _version = 1;
+  final int _version = 4;
 
   Database get db => _db;
 
@@ -43,7 +53,57 @@ class SqlService extends GetxService {
         ${User.columnName} TEXT,
         ${User.columnToken} TEXT,
         ${User.columnKeepConnected} INTEGER,
-        ${User.columnEmail} TEXT
+        ${User.columnEmail} TEXT,
+        ${User.columnPassword} TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ${Coordinate.tableName} (
+        ${Coordinate.columnDateTime} TEXT,
+        ${Coordinate.columnLatitude} TEXT,
+        ${Coordinate.columnLongitude} TEXT,
+        ${Coordinate.columnSpeed} REAL,
+        ${Coordinate.columnAlert} TEXT,
+        ${Coordinate.columnData1} TEXT,
+        ${Coordinate.columnData2} TEXT,
+        ${Coordinate.columnDevice} TEXT,
+        ${Coordinate.columnEquipamentId} TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ${Occurrence.tableName} (
+        ${Occurrence.columnType} TEXT,
+        ${Occurrence.columnDescription} TEXT,
+        ${Occurrence.columnAttachment} TEXT,
+        ${Occurrence.columnDeliveryId} TEXT,
+        ${Occurrence.columnTransportId} TEXT,
+        ${Occurrence.columnSenderId} TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ${Delivery.tableName} (
+        ${Delivery.columnId} TEXT PRIMARY KEY,
+        ${Delivery.columnWeight} REAL,
+        ${Delivery.columnVolume} REAL,
+        ${Delivery.columnScheduledCollection} TEXT,
+        ${Delivery.columnScheduledDelivery} TEXT,
+        ${Delivery.columnRoutePlanned} TEXT,
+        ${Delivery.columnRouteCompleted} TEXT,
+        ${Delivery.columnStatus} TEXT,
+        ${Delivery.columnDeliverySequence} INTEGER
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ${Transport.tableName} (
+        ${Transport.columnId} TEXT PRIMARY KEY,
+        ${Transport.columnRouteReturnPlanned} TEXT,
+        ${Transport.columnRouteReturnCompleted} TEXT,
+        ${Transport.columnDeliveryQuantity} INTEGER,
+        ${Transport.columnTimeStopped} INTEGER,
+        ${Transport.columnTotalTime} INTEGER,
+        ${Transport.columnDriverId} TEXT,
+        ${Transport.columnTransporterId} TEXT,
+        ${Transport.columnEquipamentGroupId} TEXT
       )
     ''');
   }
@@ -53,7 +113,6 @@ class SqlService extends GetxService {
       for (var tbl in tables) {
         await db.execute("DROP TABLE IF EXISTS $tbl");
       }
-
       await _createDB(db, newVersion);
     }
   }
