@@ -1,3 +1,5 @@
+import 'package:gologapp/data/model/delivery.dart';
+
 class Transport {
   static final String tableName = 'transport';
   static final String columnId = 'id';
@@ -6,7 +8,7 @@ class Transport {
   static final String columnDeliveryQuantity = 'deliveryQuantity';
   static final String columnTimeStopped = 'timeStopped';
   static final String columnTotalTime = 'totalTime';
-  
+
   static final String columnDriverId = 'driverId';
   static final String columnTransporterId = 'transporterId';
   static final String columnEquipamentGroupId = 'equipamentGroupId';
@@ -15,12 +17,16 @@ class Transport {
   final String routeReturnPlanned;
   final String routeReturnCompleted;
   final int deliveryQuantity;
-  final int timeStopped;
-  final int totalTime;
-  
+  final double timeStopped;
+  final double totalTime;
+
   final String driverId;
   final String transporterId;
   final String equipamentGroupId;
+  final String equipmentId;
+  final String plate;
+
+  late List<Delivery> deliveries;
 
   Transport({
     required this.id,
@@ -32,9 +38,15 @@ class Transport {
     required this.driverId,
     required this.transporterId,
     required this.equipamentGroupId,
-  });
+    required this.equipmentId,
+    required this.plate,
+  }) {
+    deliveries = [];
+  }
 
   factory Transport.fromJson(Map<String, dynamic> json) {
+    var equipmentGroup = json['equipamentGroup'];
+    var truck = equipmentGroup?["equipament1"];
     return Transport(
       id: json['id'] ?? '',
       routeReturnPlanned: json['routeReturnPlanned'] ?? '',
@@ -43,8 +55,12 @@ class Transport {
       timeStopped: json['timeStopped'] ?? 0,
       totalTime: json['totalTime'] ?? 0,
       driverId: json['driver'] != null ? json['driver']['id'] ?? '' : '',
-      transporterId: json['transporter'] != null ? json['transporter']['id'] ?? '' : '',
-      equipamentGroupId: json['equipamentGroup'] != null ? json['equipamentGroup']['id'] ?? '' : '',
+      transporterId: json['transporter'] != null
+          ? json['transporter']['id'] ?? ''
+          : '',
+      equipamentGroupId: json['equipamentGroup']['id'] ?? '',
+      equipmentId: truck?['id'] ?? '',
+      plate: truck?["plate"] ?? '',
     );
   }
 
@@ -84,6 +100,8 @@ class Transport {
       driverId: db[columnDriverId] ?? '',
       transporterId: db[columnTransporterId] ?? '',
       equipamentGroupId: db[columnEquipamentGroupId] ?? '',
+      equipmentId: '',
+      plate: '',
     );
   }
 }

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/data/model/delivery.dart';
+import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:gologapp/presentation/controller/route_details_controller.dart';
 
 class RouteItemDetails extends StatelessWidget {
-  const RouteItemDetails({super.key});
+  final Delivery delivery;
+
+  const RouteItemDetails(this.delivery, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    final RouteDetailsController controller = Get.put(RouteDetailsController());
+    final RouteController controller = Get.put(RouteController());
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -30,8 +33,8 @@ class RouteItemDetails extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Text(
-                      "Rota #001",
+                    Text(
+                      "Entrega ${delivery.deliverySequence}",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -46,11 +49,11 @@ class RouteItemDetails extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "Data prevista: 28/03/2026 14:30",
+                  "Data prevista: ${delivery.scheduledDelivery.day}/${delivery.scheduledDelivery.month}/${delivery.scheduledDelivery.year} ${delivery.scheduledDelivery.hour}:${delivery.scheduledDelivery.minute}",
                   style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
                 Text(
-                  "Endereço: Av. Dr. Maximiliano Baruto, 500 - Jardim Universitario, Araras - SP, 13607-339",
+                  "Endereço: ${delivery.destinationAddress}",
                   style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
               ],
@@ -59,7 +62,7 @@ class RouteItemDetails extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.arrow_right, color: Styles.COLOR_GRAY),
             onPressed: () {
-              controller.goToDetaisl();
+              controller.goToDeliveryRoute(delivery);
             },
           ),
         ],

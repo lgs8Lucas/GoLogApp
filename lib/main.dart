@@ -9,8 +9,10 @@ import 'package:gologapp/data/datasource/local/user_sql_service.dart';
 import 'package:gologapp/data/datasource/remote/api_service.dart';
 import 'package:gologapp/data/datasource/remote/auth_api_service.dart';
 import 'package:gologapp/data/repository/auth_repository.dart';
+import 'package:gologapp/data/repository/route_repository.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/login_controller.dart';
+import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/presentation/screen/login/login_screen.dart';
 import 'package:gologapp/presentation/screen/route/route_screen.dart';
 import 'package:gologapp/presentation/screen/delivery_route/delivery_route_screen.dart';
@@ -32,10 +34,12 @@ void main() async {
   await Get.putAsync(() async => TransportSqlService());
 
   Get.put(ApiService());
+  Get.put(RouteRepository(Get.find<ApiService>()));
   Get.put(AuthApi(Get.find<ApiService>()));
   Get.put(AuthRepository(Get.find<AuthApi>()));
   Get.put(LocationController(), permanent: true);
   Get.put(LoginController(Get.find<AuthRepository>(), Get.find<UserSqlService>()), permanent: true);
+  Get.put(RouteController());
   runApp(const MyApp());
 }
 

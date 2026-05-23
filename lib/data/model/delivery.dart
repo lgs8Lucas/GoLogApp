@@ -29,6 +29,8 @@ class Delivery {
   final String transportId;
   final String originAddressId;
   final String destinationAddressId;
+  final String destinationAddress;
+  final String recipientName;
 
   Delivery({
     required this.id,
@@ -44,6 +46,8 @@ class Delivery {
     required this.transportId,
     required this.originAddressId,
     required this.destinationAddressId,
+    required this.destinationAddress,
+    required this.recipientName,
   });
 
   factory Delivery.fromJson(Map<String, dynamic> json) {
@@ -61,6 +65,8 @@ class Delivery {
       transportId: json['transport'] != null ? json['transport']['id'] ?? '' : '',
       originAddressId: json['originAdrress'] != null ? json['originAdrress']['id'] ?? '' : '',
       destinationAddressId: json['destinationAddress'] != null ? json['destinationAddress']['id'] ?? '' : '',
+      destinationAddress: _getAddressFromJson(json['destinationAddress']),
+      recipientName: json['customerDelivery']?['legalName'] ?? '',
     );
   }
 
@@ -111,6 +117,18 @@ class Delivery {
       transportId: db[columnTransportId] ?? '',
       originAddressId: db[columnOriginAddressId] ?? '',
       destinationAddressId: db[columnDestinationAddressId] ?? '',
+      destinationAddress: '',
+      recipientName: '',
     );
+  }
+  
+  static String _getAddressFromJson(json) {
+    if (json == null) return '';
+    String street = json['street'] ?? '';
+    String number = json['number'] ?? '';
+    String city = json['city'] ?? '';
+    String state = json['state'] ?? '';
+    String zipCode = json['zipCode'] ?? '';
+    return '$street, $number, $city, $state, $zipCode';
   }
 }

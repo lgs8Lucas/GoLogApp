@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/data/model/transport.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 
 class RouteItemWidget extends StatelessWidget {
-  const RouteItemWidget({super.key});
+  final Transport transport;
+
+  const RouteItemWidget({super.key, required this.transport});
 
   @override
   Widget build(BuildContext context) {
@@ -27,17 +30,17 @@ class RouteItemWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Rota #001",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Text(
+                  "Rota ${transport.id.toString().padLeft(3, '0')}",
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
-                  "Início previsto: 30/11/2025 14:30",
-                  style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
+                  "Início previsto: ${DateTime.now().toString()}",
+                  style: const TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
                 Text(
-                  "Entregas: 4",
-                  style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
+                  "Entregas: ${transport.deliveryQuantity}",
+                  style: const TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
               ],
             ),
@@ -45,7 +48,7 @@ class RouteItemWidget extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.arrow_right, color: Styles.COLOR_GRAY),
             onPressed: () {
-              controller.goToDetaisl();
+              controller.goToDetails(transport);
             },
           ),
         ],

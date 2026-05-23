@@ -11,11 +11,11 @@ class TransportSqlService extends GetxService {
     return await _db.insert(Transport.tableName, row);
   }
 
-  Future<List<Map<String, dynamic>>> getAllTransports() async {
-    return await _db.query(Transport.tableName);
+  Future<List<Transport>> getAllTransports() async {
+    final List<Map<String, dynamic>> rows = await _db.query(Transport.tableName);
+    return rows.map((row) => Transport.fromJson(row)).toList();
   }
 
-  // Deleta o transporte usando o ID (String/UUID)
   Future<int> deleteTransport(String id, {Transaction? txn}) async {
     if (txn != null) {
       return await txn.delete(
@@ -37,7 +37,6 @@ class TransportSqlService extends GetxService {
     return await _db.delete(Transport.tableName);
   }
 
-  // Atualiza os dados do transporte usando o ID como base
   Future<int> updateTransport(Map<String, dynamic> row, {Transaction? txn}) async {
     if (txn != null) {
       return await txn.update(

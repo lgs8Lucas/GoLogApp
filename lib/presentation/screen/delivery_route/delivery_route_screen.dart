@@ -1,24 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
+import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/presentation/screen/events/event_page.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:latlong2/latlong.dart';
 
-class DeliveryController extends GetxController {
-  var progress = 0.15.obs;
-  var timeLeft = "1m 45s".obs;
-  var routeNumber = 1.obs;
-  var deliveryNumber = 1.obs;
-  var deliveryDate = DateTime.now().obs;
-  var recipient = "Lucas Gonçalves Silva".obs;
-  var address = "Av. Dr. Maximiliano Baruto, 500".obs;
-}
-
 class DeliveryRouteScreen extends StatelessWidget {
-  final controller = Get.put(DeliveryController());
   final LocationController locationController = Get.find<LocationController>();
+  final RouteController controller = Get.find<RouteController>();
 
   DeliveryRouteScreen({super.key});
 
@@ -28,7 +19,7 @@ class DeliveryRouteScreen extends StatelessWidget {
       backgroundColor: Styles.COLOR_BLACKBLUE,
       appBar: AppBar(
         title: Text(
-          'Rota #${controller.routeNumber.value.toString().padLeft(3, '0')}',
+          'Rota #${controller.selectedTransport?.id.toString().padLeft(3, '0') ?? '---'}',
           style: TextStyle(
             color: Styles.COLOR_WHITE,
             fontWeight: FontWeight.bold,
@@ -87,13 +78,16 @@ class DeliveryRouteScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Entrega #${controller.deliveryNumber.value.toString().padLeft(3, '0')}",
+            "Entrega #${controller.selectedDelivery?.deliverySequence.toString().padLeft(3, '0') ?? '---'}",
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 12),
-          _infoRow(controller.address.value),
           _infoRow(
-            "Data prevista: ${controller.deliveryDate.value.day}/${controller.deliveryDate.value.month}/${controller.deliveryDate.value.year}",
+            controller.selectedDelivery?.destinationAddress ??
+                'Endereço não disponível',
+          ),
+          _infoRow(
+            "Data prevista: ${controller.selectedDelivery?.scheduledDelivery.day.toString().padLeft(2, '0')}/${controller.selectedDelivery?.scheduledDelivery.month.toString().padLeft(2, '0')}/${controller.selectedDelivery?.scheduledDelivery.year} : ${controller.selectedDelivery?.scheduledDelivery.hour.toString().padLeft(2, '0')}:${controller.selectedDelivery?.scheduledDelivery.minute.toString().padLeft(2, '0')}",
           ),
           Row(
             children: [
@@ -101,9 +95,10 @@ class DeliveryRouteScreen extends StatelessWidget {
                 "Tempo restante: ",
                 style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 16),
               ),
+              /*
               Obx(
                 () => Text(
-                  controller.timeLeft.value,
+                  null ?? 'Tempo não disponível',
                   style: const TextStyle(
                     color: Styles.COLOR_LIGHTGREEN,
                     fontWeight: FontWeight.bold,
@@ -111,33 +106,38 @@ class DeliveryRouteScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              */
             ],
           ),
-          _infoRow("Destinatário: ${controller.recipient.value}"),
+          const SizedBox(height: 15),
+          _infoRow("Destinatário: ${controller.selectedDelivery?.recipientName ?? 'Destinatário não disponível'}"),
           const SizedBox(height: 15),
           Column(
             children: [
+              /*
               Obx(
                 () => Text(
-                  "${(controller.progress.value * 100).toInt()}%",
+                  "${(0 * 100).toInt()}%",
                   style: const TextStyle(
                     color: Styles.COLOR_LIGHTGREEN,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
+              ),*/
               const SizedBox(height: 4),
+              /*
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Obx(
                   () => LinearProgressIndicator(
-                    value: controller.progress.value,
+                    value: 0,
                     backgroundColor: Colors.white,
                     color: Styles.COLOR_LIGHTGREEN,
                     minHeight: 8,
                   ),
                 ),
               ),
+              */
             ],
           ),
         ],
@@ -159,8 +159,10 @@ class DeliveryRouteScreen extends StatelessWidget {
     return Stack(
       children: [
         MapUtils.getMap(
-          centerPosition: locationController.myPosition ?? const LatLng(-47.3846, -22.3572),
-          truckPosition: locationController.myPosition ?? const LatLng(-47.3732, -22.3705),
+          centerPosition:
+              locationController.myPosition ?? const LatLng(-47.3846, -22.3572),
+          truckPosition:
+              locationController.myPosition ?? const LatLng(-47.3732, -22.3705),
         ),
         Positioned(
           bottom: 20,
