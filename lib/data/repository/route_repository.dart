@@ -10,7 +10,7 @@ class RouteRepository {
 
   Future<List<Transport>> getTransports() async {
     try {
-      final response = await _apiService.get('/delivery');
+      final response = await _apiService.get('/shipment');
       if (response.statusCode == 200) {
         var decodedJson = jsonDecode(response.body);
         final List<Map<String, dynamic>> rawList = decodedJson is List
@@ -18,6 +18,8 @@ class RouteRepository {
             : [decodedJson];
         Map<String, Transport> transportByUUID = {};
         for (var raw in rawList) {
+          if (raw['transport'] == null) continue;
+
           Transport transport = Transport.fromJson(raw['transport']);
           if (transportByUUID[transport.id] != null)
             transport = transportByUUID[transport.id]!;

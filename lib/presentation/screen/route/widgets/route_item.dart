@@ -31,16 +31,25 @@ class RouteItemWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Rota ${transport.id.toString().padLeft(3, '0')}",
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  "Rota #${transport.codeTransport.toString().padLeft(3, '0')}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 Text(
                   "Início previsto: ${DateTime.now().toString()}",
-                  style: const TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
+                  style: const TextStyle(
+                    color: Styles.COLOR_GRAY,
+                    fontSize: 15,
+                  ),
                 ),
                 Text(
-                  "Entregas: ${transport.deliveryQuantity}",
-                  style: const TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
+                  "Paradas: ${transport.deliveryQuantity}",
+                  style: const TextStyle(
+                    color: Styles.COLOR_GRAY,
+                    fontSize: 15,
+                  ),
                 ),
               ],
             ),

@@ -5,7 +5,7 @@ import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/presentation/screen/events/event_page.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class DeliveryRouteScreen extends StatelessWidget {
   final LocationController locationController = Get.find<LocationController>();
@@ -87,7 +87,7 @@ class DeliveryRouteScreen extends StatelessWidget {
                 'Endereço não disponível',
           ),
           _infoRow(
-            "Data prevista: ${controller.selectedDelivery?.scheduledDelivery.day.toString().padLeft(2, '0')}/${controller.selectedDelivery?.scheduledDelivery.month.toString().padLeft(2, '0')}/${controller.selectedDelivery?.scheduledDelivery.year} : ${controller.selectedDelivery?.scheduledDelivery.hour.toString().padLeft(2, '0')}:${controller.selectedDelivery?.scheduledDelivery.minute.toString().padLeft(2, '0')}",
+            "Data prevista: ${controller.selectedDelivery?.shedulind.day.toString().padLeft(2, '0')}/${controller.selectedDelivery?.shedulind.month.toString().padLeft(2, '0')}/${controller.selectedDelivery?.shedulind.year} : ${controller.selectedDelivery?.shedulind.hour.toString().padLeft(2, '0')}:${controller.selectedDelivery?.shedulind.minute.toString().padLeft(2, '0')}",
           ),
           Row(
             children: [
@@ -110,7 +110,9 @@ class DeliveryRouteScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 15),
-          _infoRow("Destinatário: ${controller.selectedDelivery?.recipientName ?? 'Destinatário não disponível'}"),
+          _infoRow(
+            "Destinatário: ${controller.selectedDelivery?.recipientName ?? 'Destinatário não disponível'}",
+          ),
           const SizedBox(height: 15),
           Column(
             children: [
@@ -158,11 +160,14 @@ class DeliveryRouteScreen extends StatelessWidget {
   Widget _buildMapSection(LocationController locationController) {
     return Stack(
       children: [
-        MapUtils.getMap(
-          centerPosition:
-              locationController.myPosition ?? const LatLng(-47.3846, -22.3572),
-          truckPosition:
-              locationController.myPosition ?? const LatLng(-47.3732, -22.3705),
+        MapUtils.getDeliveryMap(
+          truckPosition: Position(locationController.longitude.value, locationController.latitude.value), // Longitude, Latitude
+          centerPosition: Position(locationController.longitude.value, locationController.latitude.value), // Longitude, Latitude
+          height: 300,
+          routePoints: [
+            Position(-47.3732, -22.3705),
+            Position(-47.3846, -22.3575),
+          ],
         ),
         Positioned(
           bottom: 20,

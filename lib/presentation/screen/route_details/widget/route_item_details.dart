@@ -34,7 +34,7 @@ class RouteItemDetails extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      "Entrega ${delivery.deliverySequence}",
+                      "${delivery.isPickup ? 'Coleta' : 'Entrega'} ${delivery.deliverySequence}",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -49,7 +49,7 @@ class RouteItemDetails extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "Data prevista: ${delivery.scheduledDelivery.day}/${delivery.scheduledDelivery.month}/${delivery.scheduledDelivery.year} ${delivery.scheduledDelivery.hour}:${delivery.scheduledDelivery.minute}",
+                  "Data prevista: ${delivery.shedulind.day}/${delivery.shedulind.month}/${delivery.shedulind.year} ${delivery.shedulind.hour}:${delivery.shedulind.minute}",
                   style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
                 Text(

@@ -4,8 +4,8 @@ import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class RouteDetailsScreen extends StatelessWidget {
   RouteDetailsScreen({super.key});
@@ -89,43 +89,20 @@ class RouteDetailsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 5),
-                  FutureBuilder<Widget>(
-                    future: MapUtils.getRouteMap(
-                      truckPosition: LatLng(-22.3705, -47.3732),
-                      centerPosition: LatLng(-22.3575, -47.3846),
-                      height: 300,
-                    ),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        // O que mostrar enquanto o mapa carrega
-                        return Container(
-                          height: 300,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: Styles.COLOR_LIGHTGREEN,
-                            ),
-                          ),
-                        );
-                      } else if (snapshot.hasError) {
-                        // O que mostrar se der erro
-                        return SizedBox(
-                          height: 300,
-                          child: const Center(
-                            child: Text("Erro ao carregar o mapa"),
-                          ),
-                        );
-                      } else if (snapshot.hasData) {
-                        // O mapa pronto!
-                        return snapshot.data!;
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    },
+                  MapUtils.getMap(
+                    truckPosition: Position(
+                      -47.3732,
+                      -22.3705,
+                    ), // Longitude, Latitude
+                    centerPosition: Position(
+                      -47.3846,
+                      -22.3575,
+                    ), // Longitude, Latitude
+                    height: 300,
+                    routePoints: [
+                      Position(-47.3732, -22.3705),
+                      Position(-47.3846, -22.3575),
+                    ],
                   ),
                   const SizedBox(height: 10),
                   Row(

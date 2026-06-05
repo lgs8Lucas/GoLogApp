@@ -1,89 +1,152 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
+// 1. Sua classe utilitária atualizada
 class MapUtils {
-  static const key = String.fromEnvironment('MAP_API_KEY');
+  static const token = String.fromEnvironment('MAP_API_KEY');
 
   static Widget getMap({
-    required LatLng centerPosition,
+    required Position centerPosition,
     int height = 350,
-    required LatLng truckPosition,
-    List<LatLng> routePoints = const [],
+    required Position truckPosition,
+    List<Position> routePoints = const [],
   }) {
-    return SizedBox(
-      height: height.toDouble(),
-      child: FlutterMap(
-        options: MapOptions(
-          initialCenter: centerPosition,
-          minZoom: 5,
-          maxZoom: 25,
-          initialZoom: 17,
-        ),
-        children: [
-          TileLayer(
-            urlTemplate:
-                'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
-            additionalOptions: {'accessToken': key, 'id': 'mapbox/streets-v12'},
-          ),
-          if (routePoints.isNotEmpty)
-            PolylineLayer(
-              polylines: [
-                Polyline(
-                  points: routePoints,
-                  color: Colors.blueAccent,
-                  strokeWidth: 5,
-                ),
-              ],
-            ),
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: truckPosition,
-                child: const Icon(
-                  Icons.fire_truck_rounded,
-                  color: Colors.blueAccent,
-                  size: 40,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    MapboxOptions.setAccessToken(token);
+    return MapboxWidgetAdapter(
+      centerPosition: centerPosition,
+      height: height,
+      truckPosition: truckPosition,
+      routePoints: routePoints,
     );
   }
 
-  static Future<Widget> getRouteMap({
-    required LatLng centerPosition,
-    required LatLng truckPosition,
+  // NOVO MÉTODO: Estilo Waze (Inclinado/3D)
+  static Widget getDeliveryMap({
+    required Position centerPosition,
     int height = 350,
-  }) async {
-    const url =
-        'https://router.project-osrm.org/route/v1/driving/-47.3846,-22.3572;-47.3732,-22.3705?overview=full&geometries=geojson';
+    required Position truckPosition,
+    List<Position> routePoints = const [],
+    double bearing = 0.0, // Direção da câmera (em graus)
+    double pitch = 55.0, // Ângulo de inclinação (estilo Waze)
+    double zoom = 16.5, // Um pouco mais perto para sensação 3D
+  }) {
+    MapboxOptions.setAccessToken(token);
+    return MapboxWidgetAdapter(
+      centerPosition: centerPosition,
+      height: height,
+      truckPosition: truckPosition,
+      routePoints: routePoints,
+      pitch: pitch,
+      bearing: bearing,
+      zoom: zoom,
+      isDeliveryMode: true, // Flag para renderizar prédios em 3D se desejar
+    );
+  }
+}
 
+// 2. O Widget interno adaptado
+class MapboxWidgetAdapter extends StatefulWidget {
+  final Position centerPosition;
+  final int height;
+  final Position truckPosition;
+  final List<Position> routePoints;
+  final double pitch;
+  final double bearing;
+  final double zoom;
+  final bool isDeliveryMode;
+
+  const MapboxWidgetAdapter({
+    super.key,
+    required this.centerPosition,
+    this.height = 350,
+    required this.truckPosition,
+    this.routePoints = const [],
+    this.pitch = 0.0,
+    this.bearing = 0.0,
+    this.zoom = 17.0,
+    this.isDeliveryMode = false,
+  });
+
+  @override
+  State<MapboxWidgetAdapter> createState() => _MapboxWidgetAdapterState();
+}
+
+class _MapboxWidgetAdapterState extends State<MapboxWidgetAdapter> {
+  MapboxMap? _mapboxMap;
+
+  void _onMapCreated(MapboxMap mapboxMap) {
+    _mapboxMap = mapboxMap;
+    _renderMapElements();
+  }
+
+  Future<void> _renderMapElements() async {
+    if (_mapboxMap == null) return;
+
+    // Se estiver no modo entrega, ativa a camada de prédios em 3D
+    if (widget.isDeliveryMode) {
+      _enable3dBuildings();
+    }
+
+    // SOLUÇÃO: Usar um Círculo Nativo (Garante que vai aparecer algo na tela)
+    final circleManager = await _mapboxMap!.annotations
+        .createCircleAnnotationManager();
+    await circleManager.create(
+      CircleAnnotationOptions(
+        geometry: Point(coordinates: widget.truckPosition),
+        circleColor: Colors.redAccent.toARGB32(), // Cor do marcador
+        circleRadius: 10.0, // Tamanho do círculo
+        circleStrokeWidth: 3.0, // Borda do círculo
+        circleStrokeColor: Colors.white.toARGB32(), // Cor da borda
+      ),
+    );
+
+    // Configura a linha da rota
+    if (widget.routePoints.isNotEmpty) {
+      final polylineManager = await _mapboxMap!.annotations
+          .createPolylineAnnotationManager();
+      await polylineManager.create(
+        PolylineAnnotationOptions(
+          geometry: LineString(coordinates: widget.routePoints),
+          lineColor: Colors.blueAccent.toARGB32(),
+          lineWidth: 6.0,
+        ),
+      );
+    }
+  }
+
+  // Opcional: Mostra os prédios saltando em 3D conforme o Waze faz em centros urbanos
+  void _enable3dBuildings() async {
     try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List coords = data['routes'][0]['geometry']['coordinates'];
-        final routePoints = coords.map((c) => LatLng(c[1], c[0])).toList();
-        return getMap(
-          centerPosition: centerPosition,
-          truckPosition: truckPosition,
-          routePoints: routePoints,
-          height: height,
+      if (await _mapboxMap!.style.styleLayerExists("building")) {
+        // Altera a propriedade da camada nativa de prédios para dar volume (se disponível no estilo)
+        await _mapboxMap!.style.setStyleLayerProperty(
+          "building",
+          "building-extrusion-height",
+          ["get", "height"],
         );
       }
     } catch (e) {
-      debugPrint("Erro na GoLogAPI: $e");
+      // Ignora silenciosamente se o estilo padrão não tiver a camada configurável
     }
-    return getMap(
-      centerPosition: centerPosition,
-      truckPosition: truckPosition,
-      height: height,
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: widget.height.toDouble(),
+      child: MapWidget(
+        key: ValueKey(
+          "mapbox_${widget.centerPosition.lat}_${widget.centerPosition.lng}_${widget.pitch}",
+        ),
+        onMapCreated: _onMapCreated,
+        styleUri: MapboxStyles.MAPBOX_STREETS,
+        cameraOptions: CameraOptions(
+          center: Point(coordinates: widget.centerPosition),
+          zoom: widget.zoom,
+          pitch: widget.pitch, // Aplica a inclinação da tela
+          bearing: widget.bearing, // Aplica a rotação da tela
+        ),
+      ),
     );
   }
 }

@@ -14,17 +14,18 @@ class Delivery {
   static final String columnTransportId = 'transportId';
   static final String columnOriginAddressId = 'originAddressId';
   static final String columnDestinationAddressId = 'destinationAddressId';
+  static final String columnIsPickup = 'isPickup';
 
   final String id;
   final double weight;
   final double volume;
-  final DateTime scheduledCollection;
-  final DateTime scheduledDelivery;
+  final DateTime shedulind;
   final String routePlanned;
   final String routeCompleted;
   final String status;
   final int deliverySequence;
-  
+  final bool isPickup;
+
   final String deliveryTypeId;
   final String transportId;
   final String originAddressId;
@@ -36,8 +37,7 @@ class Delivery {
     required this.id,
     required this.weight,
     required this.volume,
-    required this.scheduledCollection,
-    required this.scheduledDelivery,
+    required this.shedulind,
     required this.routePlanned,
     required this.routeCompleted,
     required this.status,
@@ -48,6 +48,7 @@ class Delivery {
     required this.destinationAddressId,
     required this.destinationAddress,
     required this.recipientName,
+    required this.isPickup,
   });
 
   factory Delivery.fromJson(Map<String, dynamic> json) {
@@ -55,18 +56,26 @@ class Delivery {
       id: json['id'] ?? '',
       weight: (json['weight'] as num?)?.toDouble() ?? 0.0,
       volume: (json['volume'] as num?)?.toDouble() ?? 0.0,
-      scheduledCollection: DateTime.parse(json['scheduledCollection']),
-      scheduledDelivery: DateTime.parse(json['scheduledDelivery']),
+      shedulind: DateTime.parse(json['shedulind']),
       routePlanned: json['routePlanned'] ?? '',
       routeCompleted: json['routeCompleted'] ?? '',
       status: json['status'] ?? '',
-      deliverySequence: json['deliverySequence'] ?? 0,
-      deliveryTypeId: json['deliveryType'] != null ? json['deliveryType']['id'] ?? '' : '',
-      transportId: json['transport'] != null ? json['transport']['id'] ?? '' : '',
-      originAddressId: json['originAdrress'] != null ? json['originAdrress']['id'] ?? '' : '',
-      destinationAddressId: json['destinationAddress'] != null ? json['destinationAddress']['id'] ?? '' : '',
+      deliverySequence: json['shippingSequence'].toInt() ?? 0,
+      deliveryTypeId: json['deliveryType'] != null
+          ? json['deliveryType']['id'] ?? ''
+          : '',
+      transportId: json['transport'] != null
+          ? json['transport']['id'] ?? ''
+          : '',
+      originAddressId: json['originAdrress'] != null
+          ? json['originAdrress']['id'] ?? ''
+          : '',
+      destinationAddressId: json['destinationAddress'] != null
+          ? json['destinationAddress']['id'] ?? ''
+          : '',
       destinationAddress: _getAddressFromJson(json['destinationAddress']),
       recipientName: json['customerDelivery']?['legalName'] ?? '',
+      isPickup: json["typeOperation"] == "COLETA",
     );
   }
 
@@ -75,8 +84,7 @@ class Delivery {
       'id': id,
       'weight': weight,
       'volume': volume,
-      'scheduledCollection': scheduledCollection.toIso8601String(),
-      'scheduledDelivery': scheduledDelivery.toIso8601String(),
+      'shedulind': shedulind.toIso8601String(),
       'routePlanned': routePlanned,
       'routeCompleted': routeCompleted,
       'status': status,
@@ -89,8 +97,7 @@ class Delivery {
       columnId: id,
       columnWeight: weight,
       columnVolume: volume,
-      columnScheduledCollection: scheduledCollection.toIso8601String(),
-      columnScheduledDelivery: scheduledDelivery.toIso8601String(),
+      columnScheduledCollection: shedulind.toIso8601String(),
       columnRoutePlanned: routePlanned,
       columnRouteCompleted: routeCompleted,
       columnStatus: status,
@@ -107,8 +114,7 @@ class Delivery {
       id: db[columnId],
       weight: db[columnWeight],
       volume: db[columnVolume],
-      scheduledCollection: DateTime.parse(db[columnScheduledCollection]),
-      scheduledDelivery: DateTime.parse(db[columnScheduledDelivery]),
+      shedulind: DateTime.parse(db[columnScheduledCollection]),
       routePlanned: db[columnRoutePlanned],
       routeCompleted: db[columnRouteCompleted],
       status: db[columnStatus],
@@ -119,9 +125,10 @@ class Delivery {
       destinationAddressId: db[columnDestinationAddressId] ?? '',
       destinationAddress: '',
       recipientName: '',
+      isPickup: db[columnIsPickup] == 1,
     );
   }
-  
+
   static String _getAddressFromJson(json) {
     if (json == null) return '';
     String street = json['street'] ?? '';

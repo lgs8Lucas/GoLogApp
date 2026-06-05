@@ -44,7 +44,7 @@ class RouteController extends GetxController {
     Get.toNamed('/delivery_route');
   }
 
-  void clearError(){
+  void clearError() {
     errorMessage.value = '';
   }
 }

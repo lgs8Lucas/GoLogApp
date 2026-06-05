@@ -5,9 +5,10 @@ class Transport {
   static final String columnId = 'id';
   static final String columnRouteReturnPlanned = 'routeReturnPlanned';
   static final String columnRouteReturnCompleted = 'routeReturnCompleted';
-  static final String columnDeliveryQuantity = 'deliveryQuantity';
+  static final String columnDeliveryQuantity = 'shipmentQuantity';
   static final String columnTimeStopped = 'timeStopped';
   static final String columnTotalTime = 'totalTime';
+  static final String columnCodeTransport = 'codeTransport';
 
   static final String columnDriverId = 'driverId';
   static final String columnTransporterId = 'transporterId';
@@ -19,7 +20,7 @@ class Transport {
   final int deliveryQuantity;
   final double timeStopped;
   final double totalTime;
-
+  final int codeTransport;
   final String driverId;
   final String transporterId;
   final String equipamentGroupId;
@@ -30,6 +31,7 @@ class Transport {
 
   Transport({
     required this.id,
+    required this.codeTransport,
     required this.routeReturnPlanned,
     required this.routeReturnCompleted,
     required this.deliveryQuantity,
@@ -49,9 +51,10 @@ class Transport {
     var truck = equipmentGroup?["equipament1"];
     return Transport(
       id: json['id'] ?? '',
+      codeTransport: json['codeTransport'] ?? '',
       routeReturnPlanned: json['routeReturnPlanned'] ?? '',
       routeReturnCompleted: json['routeReturnCompleted'] ?? '',
-      deliveryQuantity: json['deliveryQuantity'] ?? 0,
+      deliveryQuantity: json[columnDeliveryQuantity] ?? 0,
       timeStopped: json['timeStopped'] ?? 0,
       totalTime: json['totalTime'] ?? 0,
       driverId: json['driver'] != null ? json['driver']['id'] ?? '' : '',
@@ -67,6 +70,7 @@ class Transport {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'codeTransport': codeTransport,
       'routeReturnPlanned': routeReturnPlanned,
       'routeReturnCompleted': routeReturnCompleted,
       'deliveryQuantity': deliveryQuantity,
@@ -92,6 +96,7 @@ class Transport {
   factory Transport.fromDb(Map<String, dynamic> db) {
     return Transport(
       id: db[columnId],
+      codeTransport: db[columnCodeTransport],
       routeReturnPlanned: db[columnRouteReturnPlanned],
       routeReturnCompleted: db[columnRouteReturnCompleted],
       deliveryQuantity: db[columnDeliveryQuantity],
