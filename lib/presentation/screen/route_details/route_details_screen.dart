@@ -83,7 +83,7 @@ class RouteDetailsScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 8), 
+                          const SizedBox(width: 8),
                         ],
                       ),
                     ],
@@ -113,7 +113,7 @@ class RouteDetailsScreen extends StatelessWidget {
                         );
                       } else if (snapshot.hasError) {
                         // O que mostrar se der erro
-                        return Container(
+                        return SizedBox(
                           height: 300,
                           child: const Center(
                             child: Text("Erro ao carregar o mapa"),

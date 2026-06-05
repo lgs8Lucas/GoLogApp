@@ -36,7 +36,7 @@ class LoginController extends GetxController {
       Get.offAllNamed('/route_screen');
     } catch (e) {
       _showErrorSnackbar(
-        'Falho no Login',
+        'Falha no Login',
         e.toString().replaceAll('Exception: ', ''),
       );
     } finally {
@@ -45,25 +45,33 @@ class LoginController extends GetxController {
   }
 
   void _showErrorSnackbar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      backgroundColor: Styles.COLOR_WHITE,
-      colorText: Styles.COLOR_RED,
-      snackPosition: SnackPosition.BOTTOM,
-      icon: const Icon(Icons.error, color: Styles.COLOR_RED),
-    );
+    try {
+      Get.snackbar(
+        title,
+        message,
+        backgroundColor: Styles.COLOR_WHITE,
+        colorText: Styles.COLOR_RED,
+        snackPosition: SnackPosition.BOTTOM,
+        icon: const Icon(Icons.error, color: Styles.COLOR_RED),
+      );
+    } catch (e) {
+      print('Erro ao mostrar snackbar: $e');
+    }
   }
 
   void _showSuccessSnackbar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      backgroundColor: Styles.COLOR_WHITE,
-      colorText: Colors.green,
-      snackPosition: SnackPosition.BOTTOM,
-      icon: const Icon(Icons.check, color: Colors.green),
-    );
+    try {
+      Get.snackbar(
+        title,
+        message,
+        backgroundColor: Styles.COLOR_WHITE,
+        colorText: Colors.green,
+        snackPosition: SnackPosition.BOTTOM,
+        icon: const Icon(Icons.check, color: Colors.green),
+      );
+    } catch (e) {
+      print('Erro ao mostrar snackbar: $e');
+    }
   }
 
   Future<String> tryKeepConnected() async {
@@ -81,10 +89,13 @@ class LoginController extends GetxController {
       await _authRepository.login(email, password);
       return '/route_screen';
     } catch (e) {
-      _showErrorSnackbar(
-        'Falho no Login',
-        e.toString().replaceAll('Exception: ', ''),
-      );
+      // Verificar se a tela está montada para exibir o erro
+      if (Get.isPrepared()) {
+        _showErrorSnackbar(
+          'Falho no Login',
+          e.toString().replaceAll('Exception: ', ''),
+        );
+      }
       return '/login';
     } finally {
       isLoading.value = false;
