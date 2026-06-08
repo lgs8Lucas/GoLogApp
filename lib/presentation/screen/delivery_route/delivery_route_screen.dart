@@ -19,7 +19,7 @@ class DeliveryRouteScreen extends StatelessWidget {
       backgroundColor: Styles.COLOR_BLACKBLUE,
       appBar: AppBar(
         title: Text(
-          'Rota #${controller.selectedTransport?.id.toString().padLeft(3, '0') ?? '---'}',
+          'Rota #${controller.selectedTransport?.codeTransport.toString().padLeft(3, '0') ?? '---'}',
           style: TextStyle(
             color: Styles.COLOR_WHITE,
             fontWeight: FontWeight.bold,
@@ -78,7 +78,7 @@ class DeliveryRouteScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Entrega #${controller.selectedDelivery?.deliverySequence.toString().padLeft(3, '0') ?? '---'}",
+            "${controller.selectedDelivery!.isPickup ? 'Coleta' : 'Entrega'} #${controller.selectedDelivery?.deliverySequence.toString().padLeft(3, '0') ?? '---'}",
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 12),
@@ -165,8 +165,9 @@ class DeliveryRouteScreen extends StatelessWidget {
           centerPosition: Position(locationController.longitude.value, locationController.latitude.value), // Longitude, Latitude
           height: 300,
           routePoints: [
-            Position(-47.3732, -22.3705),
-            Position(-47.3846, -22.3575),
+            ...MapUtils.getCoordinates(  
+              controller.selectedDelivery?.routePlanned ?? '',
+            ),
           ],
         ),
         Positioned(

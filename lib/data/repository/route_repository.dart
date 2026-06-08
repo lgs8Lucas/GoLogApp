@@ -10,7 +10,7 @@ class RouteRepository {
 
   Future<List<Transport>> getTransports() async {
     try {
-      final response = await _apiService.get('/shipment');
+      final response = await _apiService.get('/shipment/list-personalized');
       if (response.statusCode == 200) {
         var decodedJson = jsonDecode(response.body);
         final List<Map<String, dynamic>> rawList = decodedJson is List

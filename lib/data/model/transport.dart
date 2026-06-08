@@ -3,8 +3,8 @@ import 'package:gologapp/data/model/delivery.dart';
 class Transport {
   static final String tableName = 'transport';
   static final String columnId = 'id';
-  static final String columnRouteReturnPlanned = 'routeReturnPlanned';
-  static final String columnRouteReturnCompleted = 'routeReturnCompleted';
+  static final String columnRoutePlanned = 'routePlanned';
+  static final String columnRouteCompleted = 'routeCompleted';
   static final String columnDeliveryQuantity = 'shipmentQuantity';
   static final String columnTimeStopped = 'timeStopped';
   static final String columnTotalTime = 'totalTime';
@@ -15,8 +15,8 @@ class Transport {
   static final String columnEquipamentGroupId = 'equipamentGroupId';
 
   final String id;
-  final String routeReturnPlanned;
-  final String routeReturnCompleted;
+  final String routePlanned;
+  final String routeCompleted;
   final int deliveryQuantity;
   final double timeStopped;
   final double totalTime;
@@ -32,8 +32,8 @@ class Transport {
   Transport({
     required this.id,
     required this.codeTransport,
-    required this.routeReturnPlanned,
-    required this.routeReturnCompleted,
+    required this.routePlanned,
+    required this.routeCompleted,
     required this.deliveryQuantity,
     required this.timeStopped,
     required this.totalTime,
@@ -51,9 +51,9 @@ class Transport {
     var truck = equipmentGroup?["equipament1"];
     return Transport(
       id: json['id'] ?? '',
-      codeTransport: json['codeTransport'] ?? '',
-      routeReturnPlanned: json['routeReturnPlanned'] ?? '',
-      routeReturnCompleted: json['routeReturnCompleted'] ?? '',
+      codeTransport: json['codeTransport'] ?? 0,
+      routePlanned: json['routePlanned'] ?? '',
+      routeCompleted: json['routeCompleted'] ?? '',
       deliveryQuantity: json[columnDeliveryQuantity] ?? 0,
       timeStopped: json['timeStopped'] ?? 0,
       totalTime: json['totalTime'] ?? 0,
@@ -71,8 +71,8 @@ class Transport {
     return {
       'id': id,
       'codeTransport': codeTransport,
-      'routeReturnPlanned': routeReturnPlanned,
-      'routeReturnCompleted': routeReturnCompleted,
+      'routePlanned': routePlanned,
+      'routeCompleted': routeCompleted,
       'deliveryQuantity': deliveryQuantity,
       'timeStopped': timeStopped,
       'totalTime': totalTime,
@@ -82,8 +82,8 @@ class Transport {
   Map<String, dynamic> toDb() {
     return {
       columnId: id,
-      columnRouteReturnPlanned: routeReturnPlanned,
-      columnRouteReturnCompleted: routeReturnCompleted,
+      columnRoutePlanned: routePlanned,
+      columnRouteCompleted: routeCompleted,
       columnDeliveryQuantity: deliveryQuantity,
       columnTimeStopped: timeStopped,
       columnTotalTime: totalTime,
@@ -97,8 +97,8 @@ class Transport {
     return Transport(
       id: db[columnId],
       codeTransport: db[columnCodeTransport],
-      routeReturnPlanned: db[columnRouteReturnPlanned],
-      routeReturnCompleted: db[columnRouteReturnCompleted],
+      routePlanned: db[columnRoutePlanned],
+      routeCompleted: db[columnRouteCompleted],
       deliveryQuantity: db[columnDeliveryQuantity],
       timeStopped: db[columnTimeStopped],
       totalTime: db[columnTotalTime],

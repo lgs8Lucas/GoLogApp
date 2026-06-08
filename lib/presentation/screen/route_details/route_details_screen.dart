@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/data/model/delivery.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/util/map_utils.dart';
@@ -15,11 +16,14 @@ class RouteDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Delivery> deliveries = Delivery.sortedBySequence(routeController.selectedTransport?.deliveries ?? []);
+    List<Position> positions = MapUtils.getCoordinates(routeController.selectedTransport?.routePlanned ?? '');
+    Map<String, dynamic> centerAndZoom = MapUtils.getCenterAndZoom(positions);
     return Scaffold(
       backgroundColor: Styles.COLOR_BLACKBLUE,
       appBar: AppBar(
         title: Text(
-          "Rota #${routeController.selectedTransport?.id ?? '---'}",
+          "Rota #${routeController.selectedTransport?.codeTransport.toString().padLeft(3, '0') ?? '---'}",
           style: const TextStyle(
             color: Styles.COLOR_WHITE,
             fontWeight: FontWeight.bold,
@@ -90,25 +94,27 @@ class RouteDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   MapUtils.getMap(
-                    truckPosition: Position(
-                      -47.3732,
-                      -22.3705,
-                    ), // Longitude, Latitude
-                    centerPosition: Position(
-                      -47.3846,
-                      -22.3575,
-                    ), // Longitude, Latitude
+                    truckPosition:
+                        locationController.truckPosition, 
+                    centerPosition:
+                        centerAndZoom['center'],
+                    zoom:
+                        centerAndZoom['zoom'],
+
                     height: 300,
                     routePoints: [
-                      Position(-47.3732, -22.3705),
-                      Position(-47.3846, -22.3575),
+                      ...positions
                     ],
+                    stopPoints: [
+                      positions.first,
+                      ...deliveries.map((d) => Position(d.destinationLng, d.destinationLat)),
+                    ]
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
                       Text(
-                        "Entregas",
+                        "Paradas:",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
@@ -119,20 +125,36 @@ class RouteDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Expanded(
                     child: ListView.builder(
-                      itemCount:
-                          routeController
-                              .selectedTransport
-                              ?.deliveries
-                              .length ??
-                          0,
+                      itemCount: deliveries.length,
                       itemBuilder: (context, index) {
-                        final delivery = routeController
-                            .selectedTransport!
-                            .deliveries[index];
+                        final delivery = deliveries[deliveries.length-1-index];
                         return GestureDetector(
                           child: RouteItemDetails(delivery),
                         );
                       },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Botão de iniciar
+                  ElevatedButton(
+                    onPressed: () {
+                      routeController.startRoute();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Styles.COLOR_LIGHTGREEN,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      "Iniciar",
+                      style: TextStyle(
+                        color: Styles.COLOR_WHITE,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

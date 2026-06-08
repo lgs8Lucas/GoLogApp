@@ -96,8 +96,8 @@ class SqlService extends GetxService {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS ${Transport.tableName} (
         ${Transport.columnId} TEXT PRIMARY KEY,
-        ${Transport.columnRouteReturnPlanned} TEXT,
-        ${Transport.columnRouteReturnCompleted} TEXT,
+        ${Transport.columnRoutePlanned} TEXT,
+        ${Transport.columnRouteCompleted} TEXT,
         ${Transport.columnDeliveryQuantity} INTEGER,
         ${Transport.columnTimeStopped} INTEGER,
         ${Transport.columnTotalTime} INTEGER,

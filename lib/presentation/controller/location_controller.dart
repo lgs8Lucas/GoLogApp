@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mapbox;
 
 class LocationController extends GetxController {
   var latitude = 0.0.obs;
@@ -13,6 +14,11 @@ class LocationController extends GetxController {
     // Se ainda estiver carregando ou as coordenadas forem 0, retornamos null
     if (latitude.value == 0.0 && longitude.value == 0.0) return null;
     return LatLng(latitude.value, longitude.value);
+  }
+
+  mapbox.Position get truckPosition {
+    if (latitude.value == 0.0 && longitude.value == 0.0) return mapbox.Position(0.0, 0.0);
+    return mapbox.Position(longitude.value, latitude.value);
   }
 
   StreamSubscription<Position>? _positionStreamSubscription;

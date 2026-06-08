@@ -12,9 +12,10 @@ class Delivery {
 
   static final String columnDeliveryTypeId = 'deliveryTypeId';
   static final String columnTransportId = 'transportId';
-  static final String columnOriginAddressId = 'originAddressId';
-  static final String columnDestinationAddressId = 'destinationAddressId';
   static final String columnIsPickup = 'isPickup';
+  static final String columnDestinationAddress = 'destinationAddress';
+  static final String columnDestinationLat = 'destinationLat';
+  static final String columnDestinationLng = 'destinationLng';
 
   final String id;
   final double weight;
@@ -28,10 +29,10 @@ class Delivery {
 
   final String deliveryTypeId;
   final String transportId;
-  final String originAddressId;
-  final String destinationAddressId;
   final String destinationAddress;
   final String recipientName;
+  final double destinationLat;
+  final double destinationLng;
 
   Delivery({
     required this.id,
@@ -44,11 +45,11 @@ class Delivery {
     required this.deliverySequence,
     required this.deliveryTypeId,
     required this.transportId,
-    required this.originAddressId,
-    required this.destinationAddressId,
     required this.destinationAddress,
     required this.recipientName,
     required this.isPickup,
+    required this.destinationLat,
+    required this.destinationLng,
   });
 
   factory Delivery.fromJson(Map<String, dynamic> json) {
@@ -60,22 +61,20 @@ class Delivery {
       routePlanned: json['routePlanned'] ?? '',
       routeCompleted: json['routeCompleted'] ?? '',
       status: json['status'] ?? '',
-      deliverySequence: json['shippingSequence'].toInt() ?? 0,
-      deliveryTypeId: json['deliveryType'] != null
-          ? json['deliveryType']['id'] ?? ''
+      deliverySequence: json['routeStop']?['sequenceOrder'].toInt() ?? 0,
+      deliveryTypeId: json['shipmentType'] != null
+          ? json['shipmentType']['id'] ?? ''
           : '',
       transportId: json['transport'] != null
           ? json['transport']['id'] ?? ''
           : '',
-      originAddressId: json['originAdrress'] != null
-          ? json['originAdrress']['id'] ?? ''
+      destinationAddress: json['address'] != null
+          ? _getAddressFromJson(json['address'])
           : '',
-      destinationAddressId: json['destinationAddress'] != null
-          ? json['destinationAddress']['id'] ?? ''
-          : '',
-      destinationAddress: _getAddressFromJson(json['destinationAddress']),
-      recipientName: json['customerDelivery']?['legalName'] ?? '',
+      recipientName: json['customer']?['legalName'] ?? '',
       isPickup: json["typeOperation"] == "COLETA",
+      destinationLat: double.tryParse(json['address']?['latitude']??'0') ?? 0.0,
+      destinationLng: double.tryParse(json['address']?['longitude']??'0') ?? 0.0,
     );
   }
 
@@ -104,8 +103,9 @@ class Delivery {
       columnDeliverySequence: deliverySequence,
       columnDeliveryTypeId: deliveryTypeId,
       columnTransportId: transportId,
-      columnOriginAddressId: originAddressId,
-      columnDestinationAddressId: destinationAddressId,
+      columnDestinationAddress: destinationAddress,
+      columnDestinationLat: destinationLat,
+      columnDestinationLng: destinationLng,
     };
   }
 
@@ -121,9 +121,9 @@ class Delivery {
       deliverySequence: db[columnDeliverySequence],
       deliveryTypeId: db[columnDeliveryTypeId] ?? '',
       transportId: db[columnTransportId] ?? '',
-      originAddressId: db[columnOriginAddressId] ?? '',
-      destinationAddressId: db[columnDestinationAddressId] ?? '',
-      destinationAddress: '',
+      destinationAddress: db[columnDestinationAddress] ?? '',
+      destinationLat: (db[columnDestinationLat] as num?)?.toDouble() ?? 0.0,
+      destinationLng: (db[columnDestinationLng] as num?)?.toDouble() ?? 0.0,
       recipientName: '',
       isPickup: db[columnIsPickup] == 1,
     );
@@ -137,5 +137,9 @@ class Delivery {
     String state = json['state'] ?? '';
     String zipCode = json['zipCode'] ?? '';
     return '$street, $number, $city, $state, $zipCode';
+  }
+
+  static List<Delivery> sortedBySequence(List<Delivery> deliveries) {
+    return deliveries..sort((a, b) => b.deliverySequence.compareTo(a.deliverySequence));
   }
 }

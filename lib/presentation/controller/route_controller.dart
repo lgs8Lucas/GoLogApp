@@ -47,4 +47,14 @@ class RouteController extends GetxController {
   void clearError() {
     errorMessage.value = '';
   }
+
+  void startRoute() {
+    if (selectedTransport == null && selectedDelivery != null) return;
+    for (var delivery in Delivery.sortedBySequence(selectedTransport!.deliveries)) {
+      if (delivery.status != "COMPLETO") {
+        selectedDelivery = delivery;
+        Get.toNamed('/delivery_route');
+      }
+    }
+  }
 }
