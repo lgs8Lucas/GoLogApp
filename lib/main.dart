@@ -35,7 +35,7 @@ void main() async {
   await Get.putAsync(() async => TransportSqlService());
 
   Get.put(ApiService());
-  Get.put(RouteRepository(Get.find<ApiService>()));
+  Get.put(RouteRepository(Get.find<ApiService>(), Get.find<TransportSqlService>(), Get.find<DeliverySqlService>(), Get.find<SqlService>(), Get.find<OccurrenceSqlService>()));
   Get.put(AuthApi(Get.find<ApiService>()));
   Get.put(AuthRepository(Get.find<AuthApi>()));
   Get.put(RouteController(), permanent: true);
