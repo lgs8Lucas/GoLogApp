@@ -19,7 +19,7 @@ class SqlService extends GetxService {
 
   late Database _db;
   final String _dbName = "golog.db";
-  final int _version = 4;
+  final int _version = 6;
 
   Database get db => _db;
 
@@ -67,7 +67,8 @@ class SqlService extends GetxService {
         ${Coordinate.columnData1} TEXT,
         ${Coordinate.columnData2} TEXT,
         ${Coordinate.columnDevice} TEXT,
-        ${Coordinate.columnEquipamentId} TEXT
+        ${Coordinate.columnEquipamentId} TEXT,
+        ${Coordinate.columnIsSynced} INTEGER
       )
     ''');
     await db.execute('''
@@ -77,7 +78,10 @@ class SqlService extends GetxService {
         ${Occurrence.columnAttachment} TEXT,
         ${Occurrence.columnDeliveryId} TEXT,
         ${Occurrence.columnTransportId} TEXT,
-        ${Occurrence.columnSenderId} TEXT
+        ${Occurrence.columnIsSynced} INTEGER,
+        ${Occurrence.columnSenderId} TEXT,
+        ${Occurrence.columnDateTime} TEXT,
+        ${Occurrence.columnLocalId} INTEGER PRIMARY KEY AUTOINCREMENT
       )
     ''');
     await db.execute('''

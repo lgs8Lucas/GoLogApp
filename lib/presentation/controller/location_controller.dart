@@ -2,9 +2,16 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:gologapp/data/datasource/local/coordinate_sql_service.dart';
+import 'package:gologapp/data/model/coordinate.dart';
+import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mapbox;
 
 class LocationController extends GetxController {
+  final RouteController _routeController = Get.find<RouteController>();
+  final CoordinateSqlService _coordinateSqlService =
+      Get.find<CoordinateSqlService>();
+
   var latitude = 0.0.obs;
   var longitude = 0.0.obs;
   var isLoading = true.obs;
@@ -17,7 +24,8 @@ class LocationController extends GetxController {
   }
 
   mapbox.Position get truckPosition {
-    if (latitude.value == 0.0 && longitude.value == 0.0) return mapbox.Position(0.0, 0.0);
+    if (latitude.value == 0.0 && longitude.value == 0.0)
+      return mapbox.Position(0.0, 0.0);
     return mapbox.Position(longitude.value, latitude.value);
   }
 
@@ -79,8 +87,27 @@ class LocationController extends GetxController {
             latitude.value = position.latitude;
             longitude.value = position.longitude;
             isLoading.value = false;
-            errorMessage.value = ''; 
-            print("Localização Coletada: Lat ${position.latitude}, Lon ${position.longitude}");
+            errorMessage.value = '';
+            print(
+              "Localização Coletada: Lat ${position.latitude}, Lon ${position.longitude}",
+            );
+
+            if (_routeController.inProgress) {
+              _coordinateSqlService.insertCoordinate(
+                Coordinate(
+                  dateTime: DateTime.now(),
+                  latitude: position.latitude.toString(),
+                  longitude: position.longitude.toString(),
+                  speed: position.speed,
+                  alert: null,
+                  data1: null,
+                  data2: null,
+                  device: 'GoLogApp',
+                  equipamentId: _routeController.selectedTransport!.equipmentId.toString(),
+                  isSynced: false,
+                ),
+              );
+            }
           },
           onError: (error) {
             errorMessage.value = 'Erro ao obter localização: $error';

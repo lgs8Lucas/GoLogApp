@@ -1,11 +1,17 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:gologapp/data/datasource/local/coordinate_sql_service.dart';
+import 'package:gologapp/data/datasource/local/ocurrence_sql_service.dart';
 import 'package:gologapp/data/datasource/local/user_sql_service.dart';
+import 'package:gologapp/data/model/coordinate.dart';
+import 'package:gologapp/data/model/occurrence.dart';
 import 'package:gologapp/data/model/user.dart';
 import 'package:gologapp/util/connection_util.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
+  bool isSyncing = false;
+
   Future<Map<String, String>> _getHeaders() async {
     final Map<String, String> headers = {'Content-Type': 'application/json'};
 
@@ -93,5 +99,68 @@ class ApiService {
     return await http
         .patch(url, headers: headers, body: jsonEncode(body))
         .timeout(const Duration(seconds: 5));
+  }
+
+  Future<void> sync() async {
+    if (isSyncing) return;
+    isSyncing = true;
+
+    try {
+      // TODO: verificar se há conexão.
+      await syncOccurrences();
+      await syncCoords();
+    } catch (e) {
+      print('Erro durante a sincronização: $e');
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  Future<void> syncOccurrences() async {
+    try {
+      final occurrenceSqlService = Get.find<OccurrenceSqlService>();
+      final unsyncedOccurrences = await occurrenceSqlService
+          .get('${Occurrence.columnIsSynced} = ?', [0]);
+
+      for (final occurrence in unsyncedOccurrences) {
+        print(occurrence.toJson());
+        final response = await post('/occurrence', occurrence.toJson());
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          await occurrenceSqlService.markAsSynced(occurrence);
+        } else {
+          print(
+            'Falha ao sincronizar ocorrência: ${response.statusCode} - ${response.body}',
+          );
+        }
+      }
+    } catch (e) {
+      print('Erro ao sincronizar ocorrências: $e');
+    }
+  }
+
+  Future<void> syncCoords() async {
+    try {
+      final coordinateSqlService = Get.find<CoordinateSqlService>();
+      final unsyncedCoordinates = await coordinateSqlService.get(
+        '${Coordinate.columnIsSynced} = ?',
+        [0],
+      );
+
+      for (final coordinate in unsyncedCoordinates) {
+        final response = await post('/telemetry', coordinate.toJson());
+        print(
+          coordinate.toJson(),
+        );
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          await coordinateSqlService.markAsSynced(coordinate);
+        } else {
+          print(
+            'Falha ao sincronizar coordenada: ${response.statusCode} - ${response.body}',
+          );
+        }
+      }
+    } catch (e) {
+      print('Erro ao sincronizar coordenadas: $e');
+    }
   }
 }

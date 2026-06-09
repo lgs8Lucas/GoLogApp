@@ -20,8 +20,8 @@ class AuthRepository {
       final String token = data['token'];
       await _storage.write('jwt_token', token);
       final user = User(
-        id: "0",
-        name: 'User Master',
+        id: data['userId'],
+        name: 'Motorista',
         email: email,
         token: token,
         keepConnected: true,

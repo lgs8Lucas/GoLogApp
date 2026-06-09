@@ -6,7 +6,10 @@ import 'sql_service.dart';
 class DeliverySqlService extends GetxService {
   final Database _db = Get.find<SqlService>().db;
 
-  Future<int> insertDelivery(Map<String, dynamic> row, {Transaction? txn}) async {
+  Future<int> insertDelivery(
+    Map<String, dynamic> row, {
+    Transaction? txn,
+  }) async {
     if (txn != null) return await txn.insert(Delivery.tableName, row);
     return await _db.insert(Delivery.tableName, row);
   }
@@ -36,21 +39,26 @@ class DeliverySqlService extends GetxService {
     return await _db.delete(Delivery.tableName);
   }
 
-  Future<int> updateDelivery(Map<String, dynamic> row, {Transaction? txn}) async {
+  Future<int> updateDelivery(
+    Map<String, dynamic> values,
+    String where,
+    List<dynamic> whereArgs, {
+    Transaction? txn,
+  }) async {
     if (txn != null) {
       return await txn.update(
         Delivery.tableName,
-        row,
-        where: '${Delivery.columnId} = ?',
-        whereArgs: [row[Delivery.columnId]],
+        values,
+        where: where,
+        whereArgs: whereArgs,
       );
     }
 
     return await _db.update(
       Delivery.tableName,
-      row,
-      where: '${Delivery.columnId} = ?',
-      whereArgs: [row[Delivery.columnId]],
+      values,
+      where: where,
+      whereArgs: whereArgs,
     );
   }
 }

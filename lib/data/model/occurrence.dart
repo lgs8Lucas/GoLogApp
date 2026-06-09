@@ -1,3 +1,5 @@
+enum OccurrenceType { Inicio, Fim, Continuando }
+
 class Occurrence {
   static final String tableName = 'occurrence';
   static final String columnType = 'type';
@@ -6,6 +8,10 @@ class Occurrence {
   static final String columnDeliveryId = 'deliveryId';
   static final String columnTransportId = 'transportId';
   static final String columnSenderId = 'senderId';
+  static final String columnIsSynced = 'isSynced';
+  static final String columnLocalId = 'localId';
+  static final String columnDateTime = 'dateTime';
+
 
   final String type;
   final String description;
@@ -13,6 +19,9 @@ class Occurrence {
   final String deliveryId;
   final String transportId;
   final String senderId;
+  final bool isSynced;
+  final int localId;
+  final DateTime dateTime;
 
   Occurrence({
     required this.type,
@@ -21,6 +30,9 @@ class Occurrence {
     required this.deliveryId,
     required this.transportId,
     required this.senderId,
+    required this.isSynced,
+    required this.dateTime,
+    this.localId = 0,
   });
 
   factory Occurrence.fromJson(Map<String, dynamic> json) {
@@ -31,6 +43,9 @@ class Occurrence {
       deliveryId: json['deliveryId'] ?? '',
       transportId: json['transportId'] ?? '',
       senderId: json['senderId'] ?? '',
+      isSynced: json['isSynced'] ?? false,
+      localId: json['localId'] ?? 0,
+      dateTime: json['dateTime'] ?? DateTime.now(),
     );
   }
 
@@ -38,10 +53,11 @@ class Occurrence {
     return {
       'type': type,
       'description': description,
-      'attachment': attachment,
-      'deliveryId': deliveryId,
+      'attachment': attachment == null || attachment.length < 5 ? 'Sem anexo' : attachment,
+      'shipmentId': deliveryId,
       'transportId': transportId,
       'senderId': senderId,
+      'dateTime': dateTime.toIso8601String(),
     };
   }
 
@@ -53,6 +69,8 @@ class Occurrence {
       columnDeliveryId: deliveryId,
       columnTransportId: transportId,
       columnSenderId: senderId,
+      columnIsSynced: isSynced ? 1 : 0,
+      columnDateTime: dateTime.toIso8601String(),
     };
   }
 
@@ -64,6 +82,9 @@ class Occurrence {
       deliveryId: db[columnDeliveryId],
       transportId: db[columnTransportId],
       senderId: db[columnSenderId],
+      isSynced: db[columnIsSynced] == 1,
+      localId: db[columnLocalId] ?? 0,
+      dateTime: DateTime.parse(db[columnDateTime]),
     );
   }
 }

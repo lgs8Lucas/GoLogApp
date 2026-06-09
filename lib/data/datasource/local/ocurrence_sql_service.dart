@@ -6,13 +6,22 @@ import 'sql_service.dart';
 class OccurrenceSqlService extends GetxService {
   final Database _db = Get.find<SqlService>().db;
 
-  Future<int> insertOccurrence(Map<String, dynamic> row, {Transaction? txn}) async {
-    if (txn != null) return await txn.insert(Occurrence.tableName, row);
-    return await _db.insert(Occurrence.tableName, row);
+  Future<int> insertOccurrence(
+    Occurrence occurrence, {
+    Transaction? txn,
+  }) async {
+    if (txn != null)
+      return await txn.insert(Occurrence.tableName, occurrence.toDb());
+    return await _db.insert(Occurrence.tableName, occurrence.toDb());
   }
 
-  Future<List<Map<String, dynamic>>> getAllOccurrences() async {
-    return await _db.query(Occurrence.tableName);
+  Future<List<Occurrence>> get(String? where, List<dynamic>? whereArgs) async {
+    final List<Map<String, dynamic>> rows = await _db.query(
+      Occurrence.tableName,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    return rows.map((row) => Occurrence.fromDb(row)).toList();
   }
 
   Future<int> deleteOccurrence(String deliveryId, {Transaction? txn}) async {
@@ -37,21 +46,34 @@ class OccurrenceSqlService extends GetxService {
   }
 
   // Atualiza usando o deliveryId como referência
-  Future<int> updateOccurrence(Map<String, dynamic> row, {Transaction? txn}) async {
+  Future<int> updateOccurrence(
+    Map<String, dynamic> values,
+    String where,
+    List<dynamic> whereArgs, {
+    Transaction? txn,
+  }) async {
     if (txn != null) {
       return await txn.update(
         Occurrence.tableName,
-        row,
-        where: '${Occurrence.columnDeliveryId} = ?',
-        whereArgs: [row[Occurrence.columnDeliveryId]],
+        values,
+        where: where,
+        whereArgs: whereArgs,
       );
     }
 
     return await _db.update(
       Occurrence.tableName,
-      row,
-      where: '${Occurrence.columnDeliveryId} = ?',
-      whereArgs: [row[Occurrence.columnDeliveryId]],
+      values,
+      where: where,
+      whereArgs: whereArgs,
+    );
+  }
+
+  Future<void> markAsSynced(Occurrence occurrence) async {
+    await updateOccurrence(
+      {Occurrence.columnIsSynced: 1},
+      '${Occurrence.columnLocalId} = ?',
+      [occurrence.localId],
     );
   }
 }

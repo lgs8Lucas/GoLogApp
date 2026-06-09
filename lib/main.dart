@@ -12,6 +12,7 @@ import 'package:gologapp/data/repository/auth_repository.dart';
 import 'package:gologapp/data/repository/route_repository.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/login_controller.dart';
+import 'package:gologapp/presentation/controller/sync_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/presentation/screen/login/login_screen.dart';
 import 'package:gologapp/presentation/screen/route/route_screen.dart';
@@ -37,9 +38,13 @@ void main() async {
   Get.put(RouteRepository(Get.find<ApiService>()));
   Get.put(AuthApi(Get.find<ApiService>()));
   Get.put(AuthRepository(Get.find<AuthApi>()));
+  Get.put(RouteController(), permanent: true);
   Get.put(LocationController(), permanent: true);
-  Get.put(LoginController(Get.find<AuthRepository>(), Get.find<UserSqlService>()), permanent: true);
-  Get.put(RouteController());
+  Get.put(SyncController(), permanent: true);
+  Get.put(
+    LoginController(Get.find<AuthRepository>(), Get.find<UserSqlService>()),
+    permanent: true,
+  );
   runApp(const MyApp());
 }
 
@@ -57,7 +62,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             home: Scaffold(
               body: Center(
-                child: CircularProgressIndicator(color: Styles.COLOR_BLACKBLUE), 
+                child: CircularProgressIndicator(color: Styles.COLOR_BLACKBLUE),
               ),
             ),
           );
@@ -68,7 +73,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'GoLog',
           theme: ThemeData(scaffoldBackgroundColor: Styles.COLOR_BACKGROUND),
-          initialRoute: initialRoute, 
+          initialRoute: initialRoute,
           getPages: [
             GetPage(
               name: '/login',

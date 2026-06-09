@@ -9,6 +9,7 @@ class Coordinate {
   static final String columnData2 = 'data2';
   static final String columnDevice = 'device';
   static final String columnEquipamentId = 'equipamentId';
+  static final String columnIsSynced = 'isSynced';
 
   final DateTime dateTime;
   final String latitude;
@@ -19,6 +20,7 @@ class Coordinate {
   final String? data2;
   final String device;
   final String equipamentId;
+  final bool isSynced;
 
   Coordinate({
     required this.dateTime,
@@ -30,6 +32,7 @@ class Coordinate {
     required this.data2,
     required this.device,
     required this.equipamentId,
+    required this.isSynced,
   });
 
   factory Coordinate.fromJson(Map<String, dynamic> json) {
@@ -43,6 +46,7 @@ class Coordinate {
       data2: json['data2'] ?? '',
       device: json['device'] ?? '',
       equipamentId: json['equipamentId'] ?? '',
+      isSynced: true,
     );
   }
 
@@ -51,10 +55,10 @@ class Coordinate {
       'dateTime': dateTime.toIso8601String(),
       'latitude': latitude,
       'longitude': longitude,
-      'speed': speed,
-      'alert': alert,
-      'data1': data1,
-      'data2': data2,
+      'speed': speed??0.0,
+      'alert': alert??".",
+      'data1': data1??".",
+      'data2': data2??".",
       'device': device,
       'equipamentId': equipamentId,
     };
@@ -71,6 +75,7 @@ class Coordinate {
       columnData2: data2,
       columnDevice: device,
       columnEquipamentId: equipamentId,
+      columnIsSynced: isSynced ? 1 : 0,
     };
   }
 
@@ -85,6 +90,7 @@ class Coordinate {
       data2: db[columnData2],
       device: db[columnDevice],
       equipamentId: db[columnEquipamentId],
+      isSynced: db[columnIsSynced] == 1,
     );
   }
 }
