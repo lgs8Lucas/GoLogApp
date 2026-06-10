@@ -8,17 +8,29 @@ import 'package:gologapp/util/styles.dart';
 import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
-class RouteDetailsScreen extends StatelessWidget {
-  RouteDetailsScreen({super.key});
+class RouteDetailsScreen extends StatefulWidget {
+  const RouteDetailsScreen({super.key});
 
+  @override
+  State<RouteDetailsScreen> createState() => _RouteDetailsScreenState();
+}
+
+class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   final LocationController locationController = Get.find<LocationController>();
   final RouteController routeController = Get.find<RouteController>();
 
   @override
   Widget build(BuildContext context) {
-    List<Delivery> deliveries = Delivery.sortedBySequence(routeController.selectedTransport?.deliveries ?? []);
-    List<Position> positions = MapUtils.getCoordinates(routeController.selectedTransport?.routePlanned ?? '');
+    List<Delivery> deliveries = Delivery.sortedBySequence(
+      routeController.selectedTransport?.deliveries ?? [],
+    );
+
+    List<Position> positions = MapUtils.getCoordinates(
+      routeController.selectedTransport?.routePlanned ?? '',
+    );
+
     Map<String, dynamic> centerAndZoom = MapUtils.getCenterAndZoom(positions);
+
     return Scaffold(
       backgroundColor: Styles.COLOR_BLACKBLUE,
       appBar: AppBar(
@@ -94,21 +106,18 @@ class RouteDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   MapUtils.getMap(
-                    truckPosition:
-                        locationController.truckPosition, 
-                    centerPosition:
-                        centerAndZoom['center'],
-                    zoom:
-                        centerAndZoom['zoom'],
+                    truckPosition: locationController.truckPosition,
+                    centerPosition: centerAndZoom['center'],
+                    zoom: centerAndZoom['zoom'],
 
                     height: 300,
-                    routePoints: [
-                      ...positions
-                    ],
+                    routePoints: [...positions],
                     stopPoints: [
                       positions.first,
-                      ...deliveries.map((d) => Position(d.destinationLng, d.destinationLat)),
-                    ]
+                      ...deliveries.map(
+                        (d) => Position(d.destinationLng, d.destinationLat),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -128,17 +137,19 @@ class RouteDetailsScreen extends StatelessWidget {
                       itemCount: deliveries.length,
                       itemBuilder: (context, index) {
                         final delivery = deliveries[index];
-                        final bool isFinalized = delivery.status == "Finalizado";
+                        final bool isFinalized =
+                            delivery.status == "Finalizado";
 
                         return GestureDetector(
                           onTap: isFinalized
                               ? () => Get.snackbar(
-                                    "Aviso",
-                                    "Esta parada já foi concluída.",
-                                    backgroundColor: Styles.COLOR_WHITE,
-                                    colorText: Styles.COLOR_ORANGE,
-                                  )
-                              : () => routeController.goToDeliveryRoute(delivery),
+                                  "Aviso",
+                                  "Esta parada já foi concluída.",
+                                  backgroundColor: Styles.COLOR_WHITE,
+                                  colorText: Styles.COLOR_ORANGE,
+                                )
+                              : () =>
+                                    routeController.goToDeliveryRoute(delivery),
                           child: Opacity(
                             opacity: isFinalized ? 0.6 : 1.0,
                             child: Stack(
@@ -150,7 +161,9 @@ class RouteDetailsScreen extends StatelessWidget {
                                   child: Text(
                                     delivery.status.toUpperCase(),
                                     style: TextStyle(
-                                      color: isFinalized ? Colors.green : Styles.COLOR_GRAY,
+                                      color: isFinalized
+                                          ? Colors.green
+                                          : Styles.COLOR_GRAY,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -166,13 +179,18 @@ class RouteDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   // Botão de iniciar
                   ElevatedButton(
-                    onPressed: () {
-                      routeController.startRoute();
+                    onPressed: () async {
+                      await routeController.startRoute();
+                      if (mounted) {
+                        setState(() {});
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Styles.COLOR_LIGHTGREEN,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 12),
+                        horizontal: 40,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),

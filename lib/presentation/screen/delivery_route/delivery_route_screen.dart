@@ -8,11 +8,16 @@ import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
-class DeliveryRouteScreen extends StatelessWidget {
+class DeliveryRouteScreen extends StatefulWidget {
+  const DeliveryRouteScreen({super.key});
+
+  @override
+  State<DeliveryRouteScreen> createState() => _DeliveryRouteScreenState();
+}
+
+class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
   final LocationController locationController = Get.find<LocationController>();
   final RouteController controller = Get.find<RouteController>();
-
-  DeliveryRouteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +65,9 @@ class DeliveryRouteScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildDeliveryInfo(),
-                    Expanded(child: _buildMapSection(locationController)),
+                    Expanded(
+                      child: Obx(() => _buildMapSection(locationController)),
+                    ),
                   ],
                 ),
               ),
@@ -83,7 +90,10 @@ class DeliveryRouteScreen extends StatelessWidget {
             children: [
               Text(
                 "${controller.selectedDelivery?.isPickup ?? false ? 'Coleta' : 'Entrega'} #${controller.selectedDelivery?.deliverySequence.toString().padLeft(3, '0') ?? '---'}",
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Text(
                 controller.selectedDelivery?.status.toUpperCase() ?? '',
@@ -209,7 +219,11 @@ class DeliveryRouteScreen extends StatelessWidget {
                       () {
                         Get.find<OccurrenceController>().currentAction.value =
                             ActionType.signature;
-                        Get.to(() => OccurrenceScreen());
+                        Get.to(() => OccurrenceScreen())?.then((_) {
+                          if (mounted) {
+                            setState(() {});
+                          }
+                        });
                       },
                     ),
                   ),
@@ -221,7 +235,11 @@ class DeliveryRouteScreen extends StatelessWidget {
                       () {
                         Get.find<OccurrenceController>().currentAction.value =
                             ActionType.observation;
-                        Get.to(() => OccurrenceScreen());
+                        Get.to(() => OccurrenceScreen())?.then((_) {
+                          if (mounted) {
+                            setState(() {});
+                          }
+                        });
                       },
                     ),
                   ),
@@ -233,7 +251,11 @@ class DeliveryRouteScreen extends StatelessWidget {
                 child: _actionButton("Encerrar Rota", Styles.COLOR_RED, () {
                   Get.find<OccurrenceController>().currentAction.value =
                       ActionType.finish;
-                  Get.to(() => OccurrenceScreen());
+                  Get.to(() => OccurrenceScreen())?.then((_) {
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  });
                 }),
               ),
             ],
