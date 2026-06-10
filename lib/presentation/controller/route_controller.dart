@@ -37,6 +37,7 @@ class RouteController extends GetxController {
     try {
       isLoading(true);
       var data = await _routeRepository.getTransports();
+      data.sort((a, b) => a.codeTransport.compareTo(b.codeTransport));
       transportList.assignAll(data);
     } catch (e) {
       print('Erro ao buscar transportes: $e');

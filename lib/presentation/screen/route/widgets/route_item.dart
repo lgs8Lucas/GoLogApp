@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/data/model/transport.dart';
+import 'package:gologapp/util/date_extensions.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 
@@ -38,7 +39,7 @@ class RouteItemWidget extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "Início previsto: ${DateTime.now().toString()}",
+                  "Início previsto: ${DateTime.now().toDisplayFormat()}",
                   style: const TextStyle(
                     color: Styles.COLOR_GRAY,
                     fontSize: 15,

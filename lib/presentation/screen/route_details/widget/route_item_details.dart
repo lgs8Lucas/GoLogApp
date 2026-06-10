@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/data/model/delivery.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
+import 'package:gologapp/util/date_extensions.dart';
 import 'package:gologapp/util/styles.dart';
 
 class RouteItemDetails extends StatelessWidget {
@@ -49,7 +50,7 @@ class RouteItemDetails extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "Data prevista: ${delivery.shedulind.day}/${delivery.shedulind.month}/${delivery.shedulind.year} ${delivery.shedulind.hour}:${delivery.shedulind.minute}",
+                  "Data prevista: ${delivery.shedulind.toDisplayFormat()}",
                   style: TextStyle(color: Styles.COLOR_GRAY, fontSize: 15),
                 ),
                 Text(
