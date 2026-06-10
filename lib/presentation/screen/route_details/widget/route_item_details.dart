@@ -60,12 +60,6 @@ class RouteItemDetails extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.arrow_right, color: Styles.COLOR_GRAY),
-            onPressed: () {
-              controller.goToDeliveryRoute(delivery);
-            },
-          ),
         ],
       ),
     );

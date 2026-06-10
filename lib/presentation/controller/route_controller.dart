@@ -66,7 +66,7 @@ class RouteController extends GetxController {
     for (var delivery in Delivery.sortedBySequence(
       selectedTransport!.deliveries,
     )) {
-      if (delivery.status != "Iniciado") {
+      if (delivery.status != "Finalizado") {
         await startDelivery(delivery);
         break; // Inicia apenas a primeira entrega pendente na sequência
       }
@@ -98,6 +98,7 @@ class RouteController extends GetxController {
             ),
             txn: txn,
           );
+          delivery.status = "Iniciado";
           await _deliverySqlService.updateDelivery(
             {Delivery.columnStatus: "Iniciado"},
             '${Delivery.columnId} = ? AND ${Delivery.columnTransportId} = ?',

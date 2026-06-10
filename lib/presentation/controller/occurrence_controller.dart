@@ -70,18 +70,20 @@ class OccurrenceController extends GetxController {
     );
 
     await _occurrenceSqlService.insertOccurrence(occurrence);
-
     if (currentAction.value == ActionType.signature) {
+      delivery.status = "Finalizado";
       await _deliverySqlService.updateDelivery(
         {Delivery.columnStatus: "Finalizado"},
         '${Delivery.columnId} = ? AND ${Delivery.columnTransportId} = ?',
         [delivery.id, transport.id],
       );
+      _routeController.transportList.refresh();
     }
 
     observationTextController.clear();
     Get.back();
-    if (currentAction.value == ActionType.signature || currentAction.value == ActionType.finish) {
+    if (currentAction.value == ActionType.signature ||
+        currentAction.value == ActionType.finish) {
       Get.back();
     }
   }

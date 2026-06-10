@@ -145,6 +145,6 @@ class Delivery {
   }
 
   static List<Delivery> sortedBySequence(List<Delivery> deliveries) {
-    return deliveries..sort((a, b) => b.deliverySequence.compareTo(a.deliverySequence));
+    return deliveries..sort((a, b) => a.deliverySequence.compareTo(b.deliverySequence));
   }
 }

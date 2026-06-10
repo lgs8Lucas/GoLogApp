@@ -127,9 +127,38 @@ class RouteDetailsScreen extends StatelessWidget {
                     child: ListView.builder(
                       itemCount: deliveries.length,
                       itemBuilder: (context, index) {
-                        final delivery = deliveries[deliveries.length-1-index];
+                        final delivery = deliveries[index];
+                        final bool isFinalized = delivery.status == "Finalizado";
+
                         return GestureDetector(
-                          child: RouteItemDetails(delivery),
+                          onTap: isFinalized
+                              ? () => Get.snackbar(
+                                    "Aviso",
+                                    "Esta parada já foi concluída.",
+                                    backgroundColor: Styles.COLOR_WHITE,
+                                    colorText: Styles.COLOR_ORANGE,
+                                  )
+                              : () => routeController.goToDeliveryRoute(delivery),
+                          child: Opacity(
+                            opacity: isFinalized ? 0.6 : 1.0,
+                            child: Stack(
+                              children: [
+                                RouteItemDetails(delivery),
+                                Positioned(
+                                  top: 18,
+                                  right: 20,
+                                  child: Text(
+                                    delivery.status.toUpperCase(),
+                                    style: TextStyle(
+                                      color: isFinalized ? Colors.green : Styles.COLOR_GRAY,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     ),

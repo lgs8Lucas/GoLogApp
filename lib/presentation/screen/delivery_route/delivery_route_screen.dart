@@ -78,18 +78,34 @@ class DeliveryRouteScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "${controller.selectedDelivery!.isPickup ? 'Coleta' : 'Entrega'} #${controller.selectedDelivery?.deliverySequence.toString().padLeft(3, '0') ?? '---'}",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "${controller.selectedDelivery?.isPickup ?? false ? 'Coleta' : 'Entrega'} #${controller.selectedDelivery?.deliverySequence.toString().padLeft(3, '0') ?? '---'}",
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500),
+              ),
+              Text(
+                controller.selectedDelivery?.status.toUpperCase() ?? '',
+                style: TextStyle(
+                  color: controller.selectedDelivery?.status == "Finalizado"
+                      ? Colors.green
+                      : Styles.COLOR_GRAY,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           _infoRow(
             controller.selectedDelivery?.destinationAddress ??
                 'Endereço não disponível',
           ),
-          _infoRow(
-            "Data prevista: ${controller.selectedDelivery?.shedulind.day.toString().padLeft(2, '0')}/${controller.selectedDelivery?.shedulind.month.toString().padLeft(2, '0')}/${controller.selectedDelivery?.shedulind.year} : ${controller.selectedDelivery?.shedulind.hour.toString().padLeft(2, '0')}:${controller.selectedDelivery?.shedulind.minute.toString().padLeft(2, '0')}",
-          ),
+          if (controller.selectedDelivery != null)
+            _infoRow(
+              "Data prevista: ${controller.selectedDelivery!.shedulind.day.toString().padLeft(2, '0')}/${controller.selectedDelivery!.shedulind.month.toString().padLeft(2, '0')}/${controller.selectedDelivery!.shedulind.year} : ${controller.selectedDelivery!.shedulind.hour.toString().padLeft(2, '0')}:${controller.selectedDelivery!.shedulind.minute.toString().padLeft(2, '0')}",
+            ),
           Row(
             children: [
               const Text(
