@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
-// 1. Sua classe utilitária atualizada com stopPoints
 class MapUtils {
   static const token = String.fromEnvironment('MAP_API_KEY');
 
@@ -13,7 +12,7 @@ class MapUtils {
     int height = 350,
     required Position truckPosition,
     List<Position> routePoints = const [],
-    List<Position> stopPoints = const [], // <--- ADICIONADO
+    List<Position> stopPoints = const [],
     zoom = 17.0,
   }) {
     MapboxOptions.setAccessToken(token);
@@ -22,12 +21,11 @@ class MapUtils {
       height: height,
       truckPosition: truckPosition,
       routePoints: routePoints,
-      stopPoints: stopPoints, // <--- ADICIONADO
+      stopPoints: stopPoints, 
       zoom: zoom,
     );
   }
 
-  // MÉTODO: Estilo Waze (Inclinado/3D) com stopPoints
   static Widget getDeliveryMap({
     required Position centerPosition,
     int height = 350,
@@ -85,21 +83,16 @@ class MapUtils {
     sumLng += pos.lng;
   }
 
-  // 1. Calcula o Centro Médio
   Position center = Position(sumLng / positions.length, sumLat / positions.length);
 
-  // 2. Calcula o Zoom Ideal baseado no maior Delta
   num latDelta = maxLat - minLat;
   num lngDelta = maxLng - minLng;
   num maxDelta = max(latDelta, lngDelta);
 
-  double zoom = 13.0; // Zoom padrão caso os pontos sejam no mesmo lugar
+  double zoom = 13.0; 
 
   if (maxDelta > 0) {
-    // Fórmula baseada em logaritmo para a escala do mapa
     zoom = (log(360 / maxDelta) / ln2).floorToDouble();
-    
-    // Restringe para evitar zooms absurdos
     zoom = zoom.clamp(3.0, 15.0); 
   }
 
@@ -110,13 +103,12 @@ class MapUtils {
 }
 }
 
-// 2. O Widget interno adaptado com suporte a stopPoints
 class MapboxWidgetAdapter extends StatefulWidget {
   final Position centerPosition;
   final int height;
   final Position truckPosition;
   final List<Position> routePoints;
-  final List<Position> stopPoints; // <--- ADICIONADO
+  final List<Position> stopPoints; 
   final double pitch;
   final double bearing;
   final double zoom;
@@ -128,7 +120,7 @@ class MapboxWidgetAdapter extends StatefulWidget {
     this.height = 350,
     required this.truckPosition,
     this.routePoints = const [],
-    this.stopPoints = const [], // <--- ADICIONADO
+    this.stopPoints = const [], 
     this.pitch = 0.0,
     this.bearing = 0.0,
     this.zoom = 17.0,
@@ -154,10 +146,9 @@ class _MapboxWidgetAdapterState extends State<MapboxWidgetAdapter> {
       _enable3dBuildings();
     }
 
-    // Gerenciador de Círculos para os marcadores (Caminhão e Paradas)
     final circleManager = await _mapboxMap!.annotations.createCircleAnnotationManager();
 
-    // 1. Marcador do Caminhão (Vermelho)
+    // 1. Marcador do Caminhão 
     await circleManager.create(
       CircleAnnotationOptions(
         geometry: Point(coordinates: widget.truckPosition),
@@ -168,14 +159,13 @@ class _MapboxWidgetAdapterState extends State<MapboxWidgetAdapter> {
       ),
     );
 
-    // 2. NOVO: Renderizar os Stop Points (Paradas em Laranja/Amarelo)
     if (widget.stopPoints.isNotEmpty) {
       for (var stopPosition in widget.stopPoints) {
         await circleManager.create(
           CircleAnnotationOptions(
             geometry: Point(coordinates: stopPosition),
-            circleColor: Colors.orange.toARGB32(), // Cor diferenciada para as paradas
-            circleRadius: 8.0, // Um pouco menor que o caminhão
+            circleColor: Colors.orange.toARGB32(), 
+            circleRadius: 8.0, 
             circleStrokeWidth: 2.5,
             circleStrokeColor: Colors.white.toARGB32(),
           ),
@@ -183,7 +173,6 @@ class _MapboxWidgetAdapterState extends State<MapboxWidgetAdapter> {
       }
     }
 
-    // Configura a linha da rota
     if (widget.routePoints.isNotEmpty) {
       final polylineManager = await _mapboxMap!.annotations.createPolylineAnnotationManager();
       await polylineManager.create(

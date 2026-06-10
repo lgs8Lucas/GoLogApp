@@ -1,32 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gologapp/presentation/controller/occurrence_controller.dart';
 import 'package:gologapp/util/styles.dart';
 
-enum ActionType { signature, observation }
+class OccurrenceScreen extends StatelessWidget {
+  final controller = Get.find<OccurrenceController>();
 
-class OccurrenceActionController extends GetxController {
-  var currentAction = ActionType.signature.obs; 
-  final observationTextController = TextEditingController();
-
-  void toggleAction() {
-    if (currentAction.value == ActionType.signature) {
-      currentAction.value = ActionType.observation;
-    } else {
-      currentAction.value = ActionType.signature;
-    }
-  }
-
-  @override
-  void onClose() {
-    observationTextController.dispose();
-    super.onClose();
-  }
-}
-
-class OccurrenceActionScreen extends StatelessWidget {
-  final controller = Get.put(OccurrenceActionController());
-
-  OccurrenceActionScreen({super.key});
+  OccurrenceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -79,10 +59,7 @@ class OccurrenceActionScreen extends StatelessWidget {
                           controller.currentAction.value == ActionType.signature
                               ? "Registrar entrega"
                               : "Concluir",
-                          () {
-                            // Ação real aqui
-                            controller.toggleAction(); 
-                          },
+                          () => controller.saveOccurrence(),
                         )),
                       ),
                     ],

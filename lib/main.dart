@@ -12,6 +12,7 @@ import 'package:gologapp/data/repository/auth_repository.dart';
 import 'package:gologapp/data/repository/route_repository.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/login_controller.dart';
+import 'package:gologapp/presentation/controller/occurrence_controller.dart';
 import 'package:gologapp/presentation/controller/sync_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/presentation/screen/login/login_screen.dart';
@@ -44,6 +45,9 @@ void main() async {
   Get.put(
     LoginController(Get.find<AuthRepository>(), Get.find<UserSqlService>()),
     permanent: true,
+  );
+  Get.put(
+    OccurrenceController(),
   );
   runApp(const MyApp());
 }

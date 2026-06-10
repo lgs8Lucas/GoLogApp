@@ -1,4 +1,4 @@
-enum OccurrenceType { Inicio, Fim, Continuando }
+enum OccurrenceType { Inicio, Fim, Continuando, Parada, Assinatura }
 
 class Occurrence {
   static final String tableName = 'occurrence';

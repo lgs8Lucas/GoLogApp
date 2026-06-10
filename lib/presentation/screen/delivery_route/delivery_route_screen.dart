@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
-import 'package:gologapp/presentation/screen/events/event_page.dart';
+import 'package:gologapp/presentation/controller/occurrence_controller.dart';
+import 'package:gologapp/presentation/screen/events/occurrence_screen.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -184,7 +185,7 @@ class DeliveryRouteScreen extends StatelessWidget {
                       Styles.COLOR_LIGHTGREEN,
                       () {
                         Get.to(
-                          () => OccurrenceActionScreen(),
+                          () => OccurrenceScreen(),
                           arguments: ActionType.signature,
                         );
                       },
@@ -196,9 +197,9 @@ class DeliveryRouteScreen extends StatelessWidget {
                       "Registrar Ocorrência",
                       Styles.COLOR_ORANGE,
                       () {
+                        Get.find<OccurrenceController>().currentAction.value = ActionType.observation;
                         Get.to(
-                          () => OccurrenceActionScreen(),
-                          arguments: ActionType.observation,
+                          () => OccurrenceScreen(),
                         );
                       },
                     ),
@@ -210,7 +211,7 @@ class DeliveryRouteScreen extends StatelessWidget {
                 width: 200,
                 child: _actionButton("Encerrar Rota", Styles.COLOR_RED, () {
                   Get.to(
-                    () => OccurrenceActionScreen(),
+                    () => OccurrenceScreen(),
                     arguments: ActionType.observation,
                   );
                 }),
