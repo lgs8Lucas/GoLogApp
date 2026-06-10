@@ -162,11 +162,17 @@ class DeliveryRouteScreen extends StatelessWidget {
     return Stack(
       children: [
         MapUtils.getDeliveryMap(
-          truckPosition: Position(locationController.longitude.value, locationController.latitude.value), // Longitude, Latitude
-          centerPosition: Position(locationController.longitude.value, locationController.latitude.value), // Longitude, Latitude
+          truckPosition: Position(
+            locationController.longitude.value,
+            locationController.latitude.value,
+          ), // Longitude, Latitude
+          centerPosition: Position(
+            locationController.longitude.value,
+            locationController.latitude.value,
+          ), // Longitude, Latitude
           height: 300,
           routePoints: [
-            ...MapUtils.getCoordinates(  
+            ...MapUtils.getCoordinates(
               controller.selectedDelivery?.routePlanned ?? '',
             ),
           ],
@@ -183,11 +189,11 @@ class DeliveryRouteScreen extends StatelessWidget {
                     child: _actionButton(
                       "Registrar entrega",
                       Styles.COLOR_LIGHTGREEN,
+
                       () {
-                        Get.to(
-                          () => OccurrenceScreen(),
-                          arguments: ActionType.signature,
-                        );
+                        Get.find<OccurrenceController>().currentAction.value =
+                            ActionType.signature;
+                        Get.to(() => OccurrenceScreen());
                       },
                     ),
                   ),
@@ -197,10 +203,9 @@ class DeliveryRouteScreen extends StatelessWidget {
                       "Registrar Ocorrência",
                       Styles.COLOR_ORANGE,
                       () {
-                        Get.find<OccurrenceController>().currentAction.value = ActionType.observation;
-                        Get.to(
-                          () => OccurrenceScreen(),
-                        );
+                        Get.find<OccurrenceController>().currentAction.value =
+                            ActionType.observation;
+                        Get.to(() => OccurrenceScreen());
                       },
                     ),
                   ),
@@ -210,10 +215,9 @@ class DeliveryRouteScreen extends StatelessWidget {
               SizedBox(
                 width: 200,
                 child: _actionButton("Encerrar Rota", Styles.COLOR_RED, () {
-                  Get.to(
-                    () => OccurrenceScreen(),
-                    arguments: ActionType.observation,
-                  );
+                  Get.find<OccurrenceController>().currentAction.value =
+                      ActionType.finish;
+                  Get.to(() => OccurrenceScreen());
                 }),
               ),
             ],

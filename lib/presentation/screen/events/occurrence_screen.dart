@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/controller/occurrence_controller.dart';
 import 'package:gologapp/util/styles.dart';
+import 'package:signature/signature.dart';
 
 class OccurrenceScreen extends StatelessWidget {
   final controller = Get.find<OccurrenceController>();
@@ -109,9 +110,21 @@ class OccurrenceScreen extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            // TODO: Inserir canvas de assinatura aqui
-            child: Container(
-              color: Colors.transparent,
+            child: Stack(
+              children: [
+                Signature(
+                  controller: controller.signatureController,
+                  backgroundColor: Colors.transparent,
+                ),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: IconButton(
+                    onPressed: () => controller.signatureController.clear(),
+                    icon: const Icon(Icons.refresh, color: Styles.COLOR_GRAY),
+                  ),
+                ),
+              ],
             ),
           ),
           Padding(
