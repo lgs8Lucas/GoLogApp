@@ -7,15 +7,20 @@ class DeliverySqlService extends GetxService {
   final Database _db = Get.find<SqlService>().db;
 
   Future<int> insertDelivery(
-    Map<String, dynamic> row, {
+    Delivery row, {
     Transaction? txn,
   }) async {
-    if (txn != null) return await txn.insert(Delivery.tableName, row);
-    return await _db.insert(Delivery.tableName, row);
+    if (txn != null) return await txn.insert(Delivery.tableName, row.toDb());
+    return await _db.insert(Delivery.tableName, row.toDb());
   }
 
-  Future<List<Map<String, dynamic>>> getAllDeliveries() async {
-    return await _db.query(Delivery.tableName);
+  Future<List<Delivery>> get({String? where, List<dynamic>? whereArgs}) async {
+    final List<Map<String, dynamic>> rows = await _db.query(
+      Delivery.tableName,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    return rows.map((row) => Delivery.fromDb(row)).toList();
   }
 
   Future<int> deleteDelivery(String id, {Transaction? txn}) async {

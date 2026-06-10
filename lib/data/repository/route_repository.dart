@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:gologapp/data/datasource/remote/api_service.dart';
 import 'package:gologapp/data/model/delivery.dart';
+import 'package:gologapp/data/model/occurrence.dart';
 import 'package:gologapp/data/model/transport.dart';
 import 'package:gologapp/data/datasource/local/transport_sql_service.dart';
 import 'package:gologapp/data/datasource/local/delivery_sql_service.dart';
@@ -23,14 +24,15 @@ class RouteRepository {
   );
 
   Future<List<Transport>> getTransports() async {
-    List<Transport> transports = [];
     try {
+      List<Transport> transports = [];
       transports = await fetchTransports();
       transports = await mergeLocalData(transports);
       await saveTransports(transports);
     } catch (e) {
-      print("Erro ao buscar transportes: $e");
+      print("Erro ao buscar transportes Online: $e");
     }
+    List<Transport> transports = await _transportSqlService.get();
     return transports;
   }
 
@@ -71,18 +73,42 @@ class RouteRepository {
       await _deliverySqlService.deleteAllDeliveries(txn: txn);
       for (var transport in transports) {
         await _transportSqlService.insertTransport(
-          transport.toJson(),
+          transport,
           txn: txn,
         );
         for (var delivery in transport.deliveries) {
-          await _deliverySqlService.insertDelivery(delivery.toJson(), txn: txn);
+          await _deliverySqlService.insertDelivery(delivery, txn: txn);
         }
       }
     });
   }
 
   Future<List<Transport>> mergeLocalData(List<Transport> transports) async {
-    
+    List<Delivery> deliveries = transports.expand((t) => t.deliveries).toList();
+    List<Occurrence> occurrences = await _occurrenceSqlService.get(
+      '${Occurrence.columnDeliveryId} IN (${deliveries.map((d) => "'${d.id}'").join(',')})',
+      [],
+    );
+    Map<String, List<Occurrence>> occurrencesByShipmentId = {};
+    for (var occurrence in occurrences) {
+      occurrencesByShipmentId.putIfAbsent(occurrence.deliveryId, () => []);
+      occurrencesByShipmentId[occurrence.deliveryId]!.add(occurrence);
+    }
+    for (var transport in transports) {
+      for (var delivery in transport.deliveries) {
+        if (delivery.status == 'Finalizado') continue;
+        if (occurrencesByShipmentId.containsKey(delivery.id)) {
+          for (var occurrence in occurrencesByShipmentId[delivery.id]!) {
+            if (occurrence.type == OccurrenceType.Fim.name) {
+              delivery.status = 'Finalizado';
+              break;
+            } else if (occurrence.type == OccurrenceType.Inicio.name) {
+              delivery.status = 'Iniciado';
+            }
+          }
+        }
+      }
+    }
     return transports;
   }
 }

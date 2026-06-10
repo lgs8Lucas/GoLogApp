@@ -19,7 +19,7 @@ class SqlService extends GetxService {
 
   late Database _db;
   final String _dbName = "golog.db";
-  final int _version = 6;
+  final int _version = 8;
 
   Database get db => _db;
 
@@ -86,7 +86,7 @@ class SqlService extends GetxService {
     ''');
     await db.execute('''
       CREATE TABLE IF NOT EXISTS ${Delivery.tableName} (
-        ${Delivery.columnId} TEXT PRIMARY KEY,
+        ${Delivery.columnId} TEXT,
         ${Delivery.columnWeight} REAL,
         ${Delivery.columnVolume} REAL,
         ${Delivery.columnScheduledCollection} TEXT,
@@ -94,7 +94,14 @@ class SqlService extends GetxService {
         ${Delivery.columnRoutePlanned} TEXT,
         ${Delivery.columnRouteCompleted} TEXT,
         ${Delivery.columnStatus} TEXT,
-        ${Delivery.columnDeliverySequence} INTEGER
+        ${Delivery.columnDeliverySequence} INTEGER,
+        ${Delivery.columnDeliveryTypeId} TEXT,
+        ${Delivery.columnTransportId} TEXT,
+        ${Delivery.columnDestinationAddress} TEXT,
+        ${Delivery.columnRecipientName} TEXT,
+        ${Delivery.columnDestinationLat} REAL,
+        ${Delivery.columnDestinationLng} REAL,
+        ${Delivery.columnIsPickup} INTEGER
       )
     ''');
     await db.execute('''
@@ -103,11 +110,14 @@ class SqlService extends GetxService {
         ${Transport.columnRoutePlanned} TEXT,
         ${Transport.columnRouteCompleted} TEXT,
         ${Transport.columnDeliveryQuantity} INTEGER,
-        ${Transport.columnTimeStopped} INTEGER,
-        ${Transport.columnTotalTime} INTEGER,
+        ${Transport.columnTimeStopped} REAL,
+        ${Transport.columnTotalTime} REAL,
+        ${Transport.columnCodeTransport} INTEGER,
         ${Transport.columnDriverId} TEXT,
         ${Transport.columnTransporterId} TEXT,
-        ${Transport.columnEquipamentGroupId} TEXT
+        ${Transport.columnEquipamentGroupId} TEXT,
+        ${Transport.columnEquipmentId} TEXT,
+        ${Transport.columnPlate} TEXT
       )
     ''');
   }

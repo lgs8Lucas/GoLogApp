@@ -13,6 +13,9 @@ class Transport {
   static final String columnDriverId = 'driverId';
   static final String columnTransporterId = 'transporterId';
   static final String columnEquipamentGroupId = 'equipamentGroupId';
+  static final String columnEquipmentId = 'equipmentId';
+  static final String columnPlate = 'plate';
+
 
   final String id;
   final String routePlanned;
@@ -87,9 +90,12 @@ class Transport {
       columnDeliveryQuantity: deliveryQuantity,
       columnTimeStopped: timeStopped,
       columnTotalTime: totalTime,
+      columnCodeTransport: codeTransport,
       columnDriverId: driverId,
       columnTransporterId: transporterId,
       columnEquipamentGroupId: equipamentGroupId,
+      columnEquipmentId: equipmentId,
+      columnPlate: plate,
     };
   }
 
@@ -105,8 +111,8 @@ class Transport {
       driverId: db[columnDriverId] ?? '',
       transporterId: db[columnTransporterId] ?? '',
       equipamentGroupId: db[columnEquipamentGroupId] ?? '',
-      equipmentId: '',
-      plate: '',
+      equipmentId: db[columnEquipmentId] ?? '',
+      plate: db[columnPlate] ?? '',
     );
   }
 }

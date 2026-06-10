@@ -106,6 +106,9 @@ class ApiService {
     isSyncing = true;
 
     try {
+      
+      isSyncing = false;
+      return;
       // TODO: verificar se há conexão.
       await syncOccurrences();
       await syncCoords();

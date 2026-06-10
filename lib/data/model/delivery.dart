@@ -16,6 +16,7 @@ class Delivery {
   static final String columnDestinationAddress = 'destinationAddress';
   static final String columnDestinationLat = 'destinationLat';
   static final String columnDestinationLng = 'destinationLng';
+  static final String columnRecipientName = 'recipientName';
 
   final String id;
   final double weight;
@@ -23,7 +24,7 @@ class Delivery {
   final DateTime shedulind;
   final String routePlanned;
   final String routeCompleted;
-  final String status;
+  late String status;
   final int deliverySequence;
   final bool isPickup;
 
@@ -88,6 +89,8 @@ class Delivery {
       'routeCompleted': routeCompleted,
       'status': status,
       'deliverySequence': deliverySequence,
+      'isPickup': isPickup,
+      'recipientName': recipientName,
     };
   }
 
@@ -104,8 +107,10 @@ class Delivery {
       columnDeliveryTypeId: deliveryTypeId,
       columnTransportId: transportId,
       columnDestinationAddress: destinationAddress,
+      columnRecipientName: recipientName,
       columnDestinationLat: destinationLat,
       columnDestinationLng: destinationLng,
+      columnIsPickup: isPickup ? 1 : 0,
     };
   }
 
@@ -124,7 +129,7 @@ class Delivery {
       destinationAddress: db[columnDestinationAddress] ?? '',
       destinationLat: (db[columnDestinationLat] as num?)?.toDouble() ?? 0.0,
       destinationLng: (db[columnDestinationLng] as num?)?.toDouble() ?? 0.0,
-      recipientName: '',
+      recipientName: db[columnRecipientName] ?? '',
       isPickup: db[columnIsPickup] == 1,
     );
   }

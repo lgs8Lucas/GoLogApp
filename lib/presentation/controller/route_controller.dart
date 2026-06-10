@@ -99,8 +99,8 @@ class RouteController extends GetxController {
           );
           await _deliverySqlService.updateDelivery(
             {Delivery.columnStatus: "Iniciado"},
-            '${Delivery.columnId} = ?',
-            [delivery.id],
+            '${Delivery.columnId} = ? AND ${Delivery.columnTransportId} = ?',
+            [delivery.id, selectedTransport!.id],
             txn: txn,
           );
         });
