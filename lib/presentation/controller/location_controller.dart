@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:gologapp/data/datasource/local/coordinate_sql_service.dart';
 import 'package:gologapp/data/model/coordinate.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mapbox;
 
 class LocationController extends GetxController {
   final RouteController _routeController = Get.find<RouteController>();
@@ -17,16 +16,10 @@ class LocationController extends GetxController {
   var isLoading = true.obs;
   var errorMessage = ''.obs;
 
-  LatLng? get myPosition {
-    // Se ainda estiver carregando ou as coordenadas forem 0, retornamos null
-    if (latitude.value == 0.0 && longitude.value == 0.0) return null;
-    return LatLng(latitude.value, longitude.value);
-  }
-
-  mapbox.Position get truckPosition {
+  LatLng get truckPosition {
     if (latitude.value == 0.0 && longitude.value == 0.0)
-      return mapbox.Position(0.0, 0.0);
-    return mapbox.Position(longitude.value, latitude.value);
+      return const LatLng(0.0, 0.0);
+    return LatLng(latitude.value, longitude.value);
   }
 
   StreamSubscription<Position>? _positionStreamSubscription;

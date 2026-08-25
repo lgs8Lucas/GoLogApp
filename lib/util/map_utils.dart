@@ -2,47 +2,43 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapUtils {
-  static const token = String.fromEnvironment('MAP_API_KEY');
-
   static Widget getMap({
-    required Position centerPosition,
+    required LatLng centerPosition,
     int height = 350,
-    required Position truckPosition,
-    List<Position> routePoints = const [],
-    List<Position> stopPoints = const [],
-    zoom = 17.0,
+    required LatLng truckPosition,
+    List<LatLng> routePoints = const [],
+    List<LatLng> stopPoints = const [],
+    double zoom = 17.0,
   }) {
-    MapboxOptions.setAccessToken(token);
-    return MapboxWidgetAdapter(
+    return GoogleMapWidgetAdapter(
       centerPosition: centerPosition,
       height: height,
       truckPosition: truckPosition,
       routePoints: routePoints,
-      stopPoints: stopPoints, 
+      stopPoints: stopPoints,
       zoom: zoom,
     );
   }
 
   static Widget getDeliveryMap({
-    required Position centerPosition,
+    required LatLng centerPosition,
     int height = 350,
-    required Position truckPosition,
-    List<Position> routePoints = const [],
-    List<Position> stopPoints = const [], // <--- ADICIONADO
+    required LatLng truckPosition,
+    List<LatLng> routePoints = const [],
+    List<LatLng> stopPoints = const [],
     double bearing = 0.0,
     double pitch = 55.0,
     double zoom = 16.5,
   }) {
-    MapboxOptions.setAccessToken(token);
-    return MapboxWidgetAdapter(
+    return GoogleMapWidgetAdapter(
       centerPosition: centerPosition,
       height: height,
       truckPosition: truckPosition,
       routePoints: routePoints,
-      stopPoints: stopPoints, // <--- ADICIONADO
+      stopPoints: stopPoints,
       pitch: pitch,
       bearing: bearing,
       zoom: zoom,
@@ -50,77 +46,82 @@ class MapUtils {
     );
   }
 
-  static List<Position> getCoordinates(String encodedPolyline) {
+  static List<LatLng> getCoordinates(String encodedPolyline) {
     List<PointLatLng> decodedPoints = PolylinePoints.decodePolyline(
       encodedPolyline,
     );
-    return decodedPoints.map((point) => Position(point.longitude, point.latitude)).toList();
+    return decodedPoints
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList();
   }
 
-  static Map<String, dynamic> getCenterAndZoom(List<Position> positions) {
-  if (positions.isEmpty) {
+  static Map<String, dynamic> getCenterAndZoom(List<LatLng> positions) {
+    if (positions.isEmpty) {
+      return {
+        'center': const LatLng(0, 0),
+        'zoom': 2.0,
+      };
+    }
+
+    num minLat = positions.first.latitude;
+    num maxLat = positions.first.latitude;
+    num minLng = positions.first.longitude;
+    num maxLng = positions.first.longitude;
+
+    double sumLat = 0;
+    double sumLng = 0;
+
+    for (var pos in positions) {
+      if (pos.latitude < minLat) minLat = pos.latitude;
+      if (pos.latitude > maxLat) maxLat = pos.latitude;
+      if (pos.longitude < minLng) minLng = pos.longitude;
+      if (pos.longitude > maxLng) maxLng = pos.longitude;
+
+      sumLat += pos.latitude;
+      sumLng += pos.longitude;
+    }
+
+    LatLng center = LatLng(
+      sumLat / positions.length,
+      sumLng / positions.length,
+    );
+
+    num latDelta = maxLat - minLat;
+    num lngDelta = maxLng - minLng;
+    num maxDelta = max(latDelta, lngDelta);
+
+    double zoom = 13.0;
+
+    if (maxDelta > 0) {
+      zoom = (log(360 / maxDelta) / ln2).floorToDouble();
+      zoom = zoom.clamp(3.0, 15.0);
+    }
+
     return {
-      'center': Position(0, 0),
-      'zoom': 2.0,
+      'center': center,
+      'zoom': zoom,
     };
   }
-
-  num minLat = positions.first.lat;
-  num maxLat = positions.first.lng;
-  num minLng = positions.first.lat;
-  num maxLng = positions.first.lng;
-  
-  double sumLat = 0;
-  double sumLng = 0;
-
-  for (var pos in positions) {
-    if (pos.lat < minLat) minLat = pos.lat;
-    if (pos.lat > maxLat) maxLat = pos.lat;
-    if (pos.lng < minLng) minLng = pos.lng;
-    if (pos.lng > maxLng) maxLng = pos.lng;
-
-    sumLat += pos.lat;
-    sumLng += pos.lng;
-  }
-
-  Position center = Position(sumLng / positions.length, sumLat / positions.length);
-
-  num latDelta = maxLat - minLat;
-  num lngDelta = maxLng - minLng;
-  num maxDelta = max(latDelta, lngDelta);
-
-  double zoom = 13.0; 
-
-  if (maxDelta > 0) {
-    zoom = (log(360 / maxDelta) / ln2).floorToDouble();
-    zoom = zoom.clamp(3.0, 15.0); 
-  }
-
-  return {
-    'center': center,
-    'zoom': zoom,
-  };
-}
 }
 
-class MapboxWidgetAdapter extends StatefulWidget {
-  final Position centerPosition;
+class GoogleMapWidgetAdapter extends StatefulWidget {
+  final LatLng centerPosition;
   final int height;
-  final Position truckPosition;
-  final List<Position> routePoints;
-  final List<Position> stopPoints; 
+  final LatLng truckPosition;
+  final List<LatLng> routePoints;
+  final List<LatLng> stopPoints;
   final double pitch;
   final double bearing;
   final double zoom;
   final bool isDeliveryMode;
 
-  const MapboxWidgetAdapter({
+  const GoogleMapWidgetAdapter({
     super.key,
     required this.centerPosition,
     this.height = 350,
     required this.truckPosition,
     this.routePoints = const [],
-    this.stopPoints = const [], 
+    this.stopPoints = const [],
     this.pitch = 0.0,
     this.bearing = 0.0,
     this.zoom = 17.0,
@@ -128,93 +129,105 @@ class MapboxWidgetAdapter extends StatefulWidget {
   });
 
   @override
-  State<MapboxWidgetAdapter> createState() => _MapboxWidgetAdapterState();
+  State<GoogleMapWidgetAdapter> createState() =>
+      _GoogleMapWidgetAdapterState();
 }
 
-class _MapboxWidgetAdapterState extends State<MapboxWidgetAdapter> {
-  MapboxMap? _mapboxMap;
+class _GoogleMapWidgetAdapterState extends State<GoogleMapWidgetAdapter> {
+  GoogleMapController? _controller;
+  late Set<Marker> _markers;
+  late Set<Polyline> _polylines;
 
-  void _onMapCreated(MapboxMap mapboxMap) {
-    _mapboxMap = mapboxMap;
-    _renderMapElements();
+  @override
+  void initState() {
+    super.initState();
+    _markers = _buildMarkers();
+    _polylines = _buildPolylines();
   }
 
-  Future<void> _renderMapElements() async {
-    if (_mapboxMap == null) return;
+  @override
+  void didUpdateWidget(GoogleMapWidgetAdapter oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-    if (widget.isDeliveryMode) {
-      _enable3dBuildings();
+    final pointsChanged = oldWidget.stopPoints != widget.stopPoints ||
+        oldWidget.routePoints != widget.routePoints ||
+        oldWidget.truckPosition != widget.truckPosition;
+    if (pointsChanged) {
+      setState(() {
+        _markers = _buildMarkers();
+        _polylines = _buildPolylines();
+      });
     }
 
-    final circleManager = await _mapboxMap!.annotations.createCircleAnnotationManager();
-
-    // 1. Marcador do Caminhão 
-    await circleManager.create(
-      CircleAnnotationOptions(
-        geometry: Point(coordinates: widget.truckPosition),
-        circleColor: Colors.redAccent.toARGB32(),
-        circleRadius: 10.0,
-        circleStrokeWidth: 3.0,
-        circleStrokeColor: Colors.white.toARGB32(),
-      ),
-    );
-
-    if (widget.stopPoints.isNotEmpty) {
-      for (var stopPosition in widget.stopPoints) {
-        await circleManager.create(
-          CircleAnnotationOptions(
-            geometry: Point(coordinates: stopPosition),
-            circleColor: Colors.orange.toARGB32(), 
-            circleRadius: 8.0, 
-            circleStrokeWidth: 2.5,
-            circleStrokeColor: Colors.white.toARGB32(),
+    if (oldWidget.truckPosition != widget.truckPosition ||
+        oldWidget.centerPosition != widget.centerPosition) {
+      _controller?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: widget.centerPosition,
+            zoom: widget.zoom,
+            tilt: widget.pitch,
+            bearing: widget.bearing,
           ),
-        );
-      }
-    }
-
-    if (widget.routePoints.isNotEmpty) {
-      final polylineManager = await _mapboxMap!.annotations.createPolylineAnnotationManager();
-      await polylineManager.create(
-        PolylineAnnotationOptions(
-          geometry: LineString(coordinates: widget.routePoints),
-          lineColor: Colors.blueAccent.toARGB32(),
-          lineWidth: 6.0,
         ),
       );
     }
   }
 
-  void _enable3dBuildings() async {
-    try {
-      if (await _mapboxMap!.style.styleLayerExists("building")) {
-        await _mapboxMap!.style.setStyleLayerProperty(
-          "building",
-          "building-extrusion-height",
-          ["get", "height"],
-        );
-      }
-    } catch (e) {
-      // Ignora silenciosamente
+  Set<Marker> _buildMarkers() {
+    final markers = <Marker>{
+      Marker(
+        markerId: const MarkerId('truck'),
+        position: widget.truckPosition,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        zIndexInt: 1,
+      ),
+    };
+
+    for (var i = 0; i < widget.stopPoints.length; i++) {
+      markers.add(
+        Marker(
+          markerId: MarkerId('stop_$i'),
+          position: widget.stopPoints[i],
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueOrange,
+          ),
+        ),
+      );
     }
+
+    return markers;
+  }
+
+  Set<Polyline> _buildPolylines() {
+    if (widget.routePoints.isEmpty) return {};
+    return {
+      Polyline(
+        polylineId: const PolylineId('route'),
+        points: widget.routePoints,
+        color: Colors.blueAccent,
+        width: 6,
+      ),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: widget.height.toDouble(),
-      child: MapWidget(
-        key: ValueKey(
-          "mapbox_${widget.centerPosition.lat}_${widget.centerPosition.lng}_${widget.pitch}_${widget.stopPoints.length}",
-        ),
-        onMapCreated: _onMapCreated,
-        styleUri: MapboxStyles.MAPBOX_STREETS,
-        cameraOptions: CameraOptions(
-          center: Point(coordinates: widget.centerPosition),
+      child: GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: widget.centerPosition,
           zoom: widget.zoom,
-          pitch: widget.pitch,
+          tilt: widget.pitch,
           bearing: widget.bearing,
         ),
+        onMapCreated: (controller) => _controller = controller,
+        markers: _markers,
+        polylines: _polylines,
+        buildingsEnabled: widget.isDeliveryMode,
+        myLocationButtonEnabled: false,
+        zoomControlsEnabled: false,
       ),
     );
   }

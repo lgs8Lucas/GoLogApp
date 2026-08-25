@@ -70,7 +70,8 @@ class OccurrenceController extends GetxController {
     );
 
     await _occurrenceSqlService.insertOccurrence(occurrence);
-    if (currentAction.value == ActionType.signature) {
+    if (currentAction.value == ActionType.signature ||
+        currentAction.value == ActionType.finish) {
       delivery.status = "Finalizado";
       await _deliverySqlService.updateDelivery(
         {Delivery.columnStatus: "Finalizado"},
@@ -78,6 +79,9 @@ class OccurrenceController extends GetxController {
         [delivery.id, transport.id],
       );
       _routeController.transportList.refresh();
+      if (currentAction.value == ActionType.finish) {
+        _routeController.inProgress = false;
+      }
     }
 
     observationTextController.clear();

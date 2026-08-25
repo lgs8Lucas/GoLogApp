@@ -64,7 +64,7 @@ class Transport {
       transporterId: json['transporter'] != null
           ? json['transporter']['id'] ?? ''
           : '',
-      equipamentGroupId: json['equipamentGroup']['id'] ?? '',
+      equipamentGroupId: equipmentGroup?['id'] ?? '',
       equipmentId: truck?['id'] ?? '',
       plate: truck?["plate"] ?? '',
     );

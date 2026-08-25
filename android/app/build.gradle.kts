@@ -1,8 +1,25 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// O Flutter repassa os valores de --dart-define para o Gradle como a project
+// property "dart-defines": pares KEY=VALUE em base64, separados por vírgula.
+// Extraímos GOOGLE_MAPS_API_KEY daqui pra injetar no AndroidManifest.xml sem
+// precisar duplicar a chave em outro arquivo.
+val dartDefines: Map<String, String> =
+    (project.findProperty("dart-defines") as String?)
+        ?.split(",")
+        ?.filter { it.isNotEmpty() }
+        ?.associate {
+            val decoded = String(Base64.getDecoder().decode(it))
+            val separatorIndex = decoded.indexOf("=")
+            decoded.substring(0, separatorIndex) to decoded.substring(separatorIndex + 1)
+        }
+        ?: emptyMap()
 
 android {
     namespace = "com.example.gologapp"
@@ -29,6 +46,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] =
+            dartDefines["GOOGLE_MAPS_API_KEY"] ?: ""
     }
 
     buildTypes {

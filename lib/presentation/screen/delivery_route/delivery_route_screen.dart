@@ -6,7 +6,7 @@ import 'package:gologapp/presentation/controller/occurrence_controller.dart';
 import 'package:gologapp/presentation/screen/events/occurrence_screen.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class DeliveryRouteScreen extends StatefulWidget {
   const DeliveryRouteScreen({super.key});
@@ -188,14 +188,14 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
     return Stack(
       children: [
         MapUtils.getDeliveryMap(
-          truckPosition: Position(
-            locationController.longitude.value,
+          truckPosition: LatLng(
             locationController.latitude.value,
-          ), // Longitude, Latitude
-          centerPosition: Position(
             locationController.longitude.value,
+          ),
+          centerPosition: LatLng(
             locationController.latitude.value,
-          ), // Longitude, Latitude
+            locationController.longitude.value,
+          ),
           height: 300,
           routePoints: [
             ...MapUtils.getCoordinates(

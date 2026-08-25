@@ -62,7 +62,7 @@ class Delivery {
       routePlanned: json['routePlanned'] ?? '',
       routeCompleted: json['routeCompleted'] ?? '',
       status: json['status'] ?? '',
-      deliverySequence: json['routeStop']?['sequenceOrder'].toInt() ?? 0,
+      deliverySequence: (json['routeStop']?['sequenceOrder'] as num?)?.toInt() ?? 0,
       deliveryTypeId: json['shipmentType'] != null
           ? json['shipmentType']['id'] ?? ''
           : '',

@@ -6,7 +6,7 @@ import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class RouteDetailsScreen extends StatefulWidget {
   const RouteDetailsScreen({super.key});
@@ -25,7 +25,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       routeController.selectedTransport?.deliveries ?? [],
     );
 
-    List<Position> positions = MapUtils.getCoordinates(
+    List<LatLng> positions = MapUtils.getCoordinates(
       routeController.selectedTransport?.routePlanned ?? '',
     );
 
@@ -115,7 +115,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                     stopPoints: [
                       positions.first,
                       ...deliveries.map(
-                        (d) => Position(d.destinationLng, d.destinationLat),
+                        (d) => LatLng(d.destinationLat, d.destinationLng),
                       ),
                     ],
                   ),

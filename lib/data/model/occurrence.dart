@@ -45,7 +45,9 @@ class Occurrence {
       senderId: json['senderId'] ?? '',
       isSynced: json['isSynced'] ?? false,
       localId: json['localId'] ?? 0,
-      dateTime: json['dateTime'] ?? DateTime.now(),
+      dateTime: json['dateTime'] != null
+          ? DateTime.parse(json['dateTime'])
+          : DateTime.now(),
     );
   }
 
@@ -53,7 +55,7 @@ class Occurrence {
     return {
       'type': type,
       'description': description,
-      'attachment': attachment == null || attachment.length < 5 ? 'Sem anexo' : attachment,
+      'attachment': attachment.length < 5 ? 'Sem anexo' : attachment,
       'shipmentId': deliveryId,
       'transportId': transportId,
       'senderId': senderId,

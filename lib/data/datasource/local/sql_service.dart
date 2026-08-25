@@ -122,9 +122,20 @@ class SqlService extends GetxService {
     ''');
   }
 
+  // Tabelas que só espelham dados vindos do servidor: podem ser recriadas
+  // sem perda, pois são buscadas novamente na próxima sincronização.
+  static final List<String> _serverMirrorTables = [
+    User.tableName,
+    Delivery.tableName,
+    Transport.tableName,
+  ];
+
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-      for (var tbl in tables) {
+      // Occurrence e Coordinate podem conter registros locais ainda não
+      // sincronizados com o servidor: não são apagados no upgrade, apenas
+      // criados caso ainda não existam.
+      for (var tbl in _serverMirrorTables) {
         await db.execute("DROP TABLE IF EXISTS $tbl");
       }
       await _createDB(db, newVersion);

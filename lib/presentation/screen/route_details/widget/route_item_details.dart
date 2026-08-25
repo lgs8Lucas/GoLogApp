@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/util/date_extensions.dart';
 import 'package:gologapp/util/styles.dart';
 
@@ -12,8 +10,6 @@ class RouteItemDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final RouteController controller = Get.put(RouteController());
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: const BoxDecoration(

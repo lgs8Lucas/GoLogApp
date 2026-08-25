@@ -77,29 +77,11 @@ class LoginController extends GetxController {
   Future<String> tryKeepConnected() async {
     final user = (await _userSqlService.getAllUsers()).firstOrNull;
     if (user == null || user[User.columnKeepConnected] != 1) return '/login';
-    final email = user[User.columnEmail] ?? '';
-    final password = user[User.columnPassword] ?? '';
+    final token = user[User.columnToken] ?? '';
 
-    if (email.isEmpty || password.isEmpty) {
-      return '/login';
-    }
+    if (token.isEmpty) return '/login';
 
-    try {
-      isLoading.value = true;
-      await _authRepository.login(email, password);
-      return '/route_screen';
-    } catch (e) {
-      // Verificar se a tela está montada para exibir o erro
-      if (Get.isPrepared()) {
-        _showErrorSnackbar(
-          'Falho no Login',
-          e.toString().replaceAll('Exception: ', ''),
-        );
-      }
-      return '/login';
-    } finally {
-      isLoading.value = false;
-    }
+    return '/route_screen';
   }
 
   Future<void> logout() async {

@@ -85,9 +85,11 @@ class RouteRepository {
 
   Future<List<Transport>> mergeLocalData(List<Transport> transports) async {
     List<Delivery> deliveries = transports.expand((t) => t.deliveries).toList();
+    if (deliveries.isEmpty) return transports;
+    final placeholders = List.filled(deliveries.length, '?').join(',');
     List<Occurrence> occurrences = await _occurrenceSqlService.get(
-      '${Occurrence.columnDeliveryId} IN (${deliveries.map((d) => "'${d.id}'").join(',')})',
-      [],
+      '${Occurrence.columnDeliveryId} IN ($placeholders)',
+      deliveries.map((d) => d.id).toList(),
     );
     Map<String, List<Occurrence>> occurrencesByShipmentId = {};
     for (var occurrence in occurrences) {

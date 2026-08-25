@@ -34,17 +34,24 @@ class ApiService {
     return headers;
   }
 
-  Future<http.Response> get(String endpoint) async {
+  Future<http.Response> get(String endpoint, {bool allowRetry = true}) async {
     final url = Uri.parse('${ConnectionUtil.gologApiUrl}$endpoint');
     final headers = await _getHeaders();
     var response = await http
         .get(url, headers: headers)
         .timeout(const Duration(seconds: 5));
     print('GET $endpoint - Status: ${response.statusCode}');
+    if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
+      return get(endpoint, allowRetry: false);
+    }
     return response;
   }
 
-  Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
+  Future<http.Response> post(
+    String endpoint,
+    Map<String, dynamic> body, {
+    bool allowRetry = true,
+  }) async {
     final url = Uri.parse('${ConnectionUtil.gologApiUrl}$endpoint');
     if (endpoint.contains("/login")) {
       return await http
@@ -56,49 +63,108 @@ class ApiService {
           .timeout(const Duration(seconds: 5));
     } else {
       final headers = await _getHeaders();
-      return await http
+      final response = await http
           .post(url, headers: headers, body: jsonEncode(body))
           .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
+        return post(endpoint, body, allowRetry: false);
+      }
+      return response;
     }
   }
 
-  Future<http.Response> head(String endpoint) async {
+  Future<http.Response> head(String endpoint, {bool allowRetry = true}) async {
     final url = Uri.parse('${ConnectionUtil.gologApiUrl}$endpoint');
     final headers = await _getHeaders();
 
-    return await http
+    final response = await http
         .head(url, headers: headers)
         .timeout(const Duration(seconds: 5));
+    if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
+      return head(endpoint, allowRetry: false);
+    }
+    return response;
   }
 
-  Future<http.Response> delete(String endpoint) async {
+  Future<http.Response> delete(String endpoint, {bool allowRetry = true}) async {
     final url = Uri.parse('${ConnectionUtil.gologApiUrl}$endpoint');
     final headers = await _getHeaders();
 
-    return await http
+    final response = await http
         .delete(url, headers: headers)
         .timeout(const Duration(seconds: 5));
+    if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
+      return delete(endpoint, allowRetry: false);
+    }
+    return response;
   }
 
-  Future<http.Response> put(String endpoint, Map<String, dynamic> body) async {
+  Future<http.Response> put(
+    String endpoint,
+    Map<String, dynamic> body, {
+    bool allowRetry = true,
+  }) async {
     final url = Uri.parse('${ConnectionUtil.gologApiUrl}$endpoint');
     final headers = await _getHeaders();
 
-    return await http
+    final response = await http
         .put(url, headers: headers, body: jsonEncode(body))
         .timeout(const Duration(seconds: 5));
+    if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
+      return put(endpoint, body, allowRetry: false);
+    }
+    return response;
   }
 
   Future<http.Response> patch(
     String endpoint,
-    Map<String, dynamic> body,
-  ) async {
+    Map<String, dynamic> body, {
+    bool allowRetry = true,
+  }) async {
     final url = Uri.parse('${ConnectionUtil.gologApiUrl}$endpoint');
     final headers = await _getHeaders();
 
-    return await http
+    final response = await http
         .patch(url, headers: headers, body: jsonEncode(body))
         .timeout(const Duration(seconds: 5));
+    if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
+      return patch(endpoint, body, allowRetry: false);
+    }
+    return response;
+  }
+
+  // Refaz o login com as credenciais salvas localmente e atualiza o token
+  // armazenado. Usado quando uma requisição autenticada retorna 401.
+  Future<bool> _refreshSession() async {
+    try {
+      final userSqlService = Get.find<UserSqlService>();
+      final users = await userSqlService.getAllUsers();
+      if (users.isEmpty) return false;
+
+      final userMap = users.first;
+      final String email = userMap[User.columnEmail] ?? '';
+      final String password = userMap[User.columnPassword] ?? '';
+      if (email.isEmpty || password.isEmpty) return false;
+
+      final response = await post('/login', {
+        'email': email,
+        'password': password,
+      }, allowRetry: false);
+      if (response.statusCode != 200) return false;
+
+      final data = jsonDecode(response.body);
+      final String? token = data['token'];
+      if (token == null || token.isEmpty) return false;
+
+      await userSqlService.updateUser({
+        User.columnId: userMap[User.columnId],
+        User.columnToken: token,
+      });
+      return true;
+    } catch (e) {
+      print('Erro ao renovar sessão: $e');
+      return false;
+    }
   }
 
   Future<void> sync() async {
@@ -106,7 +172,6 @@ class ApiService {
     isSyncing = true;
 
     try {
-      isSyncing = false;
       await syncOccurrences();
       await syncCoords();
     } catch (e) {
