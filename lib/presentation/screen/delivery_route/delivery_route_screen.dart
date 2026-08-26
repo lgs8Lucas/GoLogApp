@@ -185,23 +185,38 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
   }
 
   Widget _buildMapSection(LocationController locationController) {
+    final delivery = controller.selectedDelivery;
+    final truckPosition = LatLng(
+      locationController.latitude.value,
+      locationController.longitude.value,
+    );
+
+    // Destino só é válido se o backend realmente informou coordenadas
+    // (o model usa 0,0 como valor padrão quando não vem preenchido).
+    final hasDestination =
+        delivery != null &&
+        (delivery.destinationLat != 0.0 || delivery.destinationLng != 0.0);
+    final destinationPosition = hasDestination
+        ? LatLng(delivery.destinationLat, delivery.destinationLng)
+        : null;
+
+    final plannedRoute = MapUtils.getCoordinates(delivery?.routePlanned ?? '');
+    // Se o trecho planejado não veio do backend, mostra ao menos uma linha
+    // reta até o destino, que vai se atualizando conforme o motorista anda.
+    final routePoints = plannedRoute.isNotEmpty
+        ? plannedRoute
+        : (destinationPosition != null
+              ? [truckPosition, destinationPosition]
+              : <LatLng>[]);
+
     return Stack(
       children: [
         MapUtils.getDeliveryMap(
-          truckPosition: LatLng(
-            locationController.latitude.value,
-            locationController.longitude.value,
-          ),
-          centerPosition: LatLng(
-            locationController.latitude.value,
-            locationController.longitude.value,
-          ),
+          truckPosition: truckPosition,
+          centerPosition: truckPosition,
           height: 300,
-          routePoints: [
-            ...MapUtils.getCoordinates(
-              controller.selectedDelivery?.routePlanned ?? '',
-            ),
-          ],
+          routePoints: routePoints,
+          stopPoints: destinationPosition != null ? [destinationPosition] : [],
         ),
         Positioned(
           bottom: 20,

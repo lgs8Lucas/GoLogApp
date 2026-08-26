@@ -32,6 +32,7 @@ class MapUtils {
     double bearing = 0.0,
     double pitch = 55.0,
     double zoom = 16.5,
+    bool followTruck = true,
   }) {
     return GoogleMapWidgetAdapter(
       centerPosition: centerPosition,
@@ -43,6 +44,7 @@ class MapUtils {
       bearing: bearing,
       zoom: zoom,
       isDeliveryMode: true,
+      followTruck: followTruck,
     );
   }
 
@@ -114,6 +116,7 @@ class GoogleMapWidgetAdapter extends StatefulWidget {
   final double bearing;
   final double zoom;
   final bool isDeliveryMode;
+  final bool followTruck;
 
   const GoogleMapWidgetAdapter({
     super.key,
@@ -126,6 +129,7 @@ class GoogleMapWidgetAdapter extends StatefulWidget {
     this.bearing = 0.0,
     this.zoom = 17.0,
     this.isDeliveryMode = false,
+    this.followTruck = false,
   });
 
   @override
@@ -159,12 +163,22 @@ class _GoogleMapWidgetAdapterState extends State<GoogleMapWidgetAdapter> {
       });
     }
 
-    if (oldWidget.truckPosition != widget.truckPosition ||
-        oldWidget.centerPosition != widget.centerPosition) {
+    // Em modo "followTruck", a câmera persegue o ícone do motorista: toda
+    // vez que uma nova localização é coletada, o zoom/centro é reafirmado
+    // sobre a posição atual do caminhão. Fora desse modo (ex: visão geral
+    // da rota), a câmera só se move quando o centro definido externamente
+    // muda (ex: troca de transporte selecionado).
+    final cameraTarget =
+        widget.followTruck ? widget.truckPosition : widget.centerPosition;
+    final oldCameraTarget = widget.followTruck
+        ? oldWidget.truckPosition
+        : oldWidget.centerPosition;
+
+    if (cameraTarget != oldCameraTarget) {
       _controller?.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            target: widget.centerPosition,
+            target: cameraTarget,
             zoom: widget.zoom,
             tilt: widget.pitch,
             bearing: widget.bearing,

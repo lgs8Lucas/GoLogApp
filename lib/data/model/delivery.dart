@@ -59,7 +59,7 @@ class Delivery {
       weight: (json['weight'] as num?)?.toDouble() ?? 0.0,
       volume: (json['volume'] as num?)?.toDouble() ?? 0.0,
       shedulind: DateTime.parse(json['shedulind']),
-      routePlanned: json['routePlanned'] ?? '',
+      routePlanned: json['routeStop']?['routePlanned'] ?? '',
       routeCompleted: json['routeCompleted'] ?? '',
       status: json['status'] ?? '',
       deliverySequence: (json['routeStop']?['sequenceOrder'] as num?)?.toInt() ?? 0,
