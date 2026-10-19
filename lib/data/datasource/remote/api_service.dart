@@ -24,6 +24,7 @@ class ApiService {
         final String? token = userMap['token'] ?? userMap[User.columnToken];
 
         if (token != null && token.isNotEmpty) {
+          print(token);
           headers['Authorization'] = 'Bearer $token';
         }
       }
@@ -34,8 +35,15 @@ class ApiService {
     return headers;
   }
 
-  Future<http.Response> get(String endpoint, {bool allowRetry = true}) async {
-    final url = Uri.parse('${ConnectionUtil.gologApiUrl}$endpoint');
+  Future<http.Response> get(String endpoint, {bool allowRetry = true, Map<String, Object>? customParams}) async {
+    var urlString = '${ConnectionUtil.gologApiUrl}$endpoint';
+    if (customParams != null && customParams.isNotEmpty) {
+      final queryParams = customParams.entries.map((entry) {
+        return '${entry.key}=${entry.value}';
+      }).join('&');
+      urlString += '?$queryParams';
+    }
+    final url = Uri.parse(urlString);
     final headers = await _getHeaders();
     var response = await http
         .get(url, headers: headers)

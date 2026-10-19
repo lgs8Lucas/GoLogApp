@@ -33,6 +33,18 @@ class OccurrenceController extends GetxController {
     super.onClose();
   }
 
+  // Verifica se já existe uma ocorrência de desfecho (entregue ou não) para
+  // essa entrega. Ignora as ocorrências automáticas de Início/Continuando
+  // criadas ao iniciar a entrega — só Fim (entregue) ou Parada (ocorrência
+  // registrada) contam como um desfecho válido para liberar a saída da tela.
+  Future<bool> hasOutcomeOccurrence(String deliveryId) async {
+    final occurrences = await _occurrenceSqlService.get(
+      '${Occurrence.columnDeliveryId} = ? AND ${Occurrence.columnType} IN (?, ?)',
+      [deliveryId, OccurrenceType.Fim.name, OccurrenceType.Parada.name],
+    );
+    return occurrences.isNotEmpty;
+  }
+
   Future<void> saveOccurrence() async {
     final delivery = _routeController.selectedDelivery;
     final transport = _routeController.selectedTransport;

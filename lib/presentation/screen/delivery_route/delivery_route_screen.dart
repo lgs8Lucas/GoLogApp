@@ -18,62 +18,103 @@ class DeliveryRouteScreen extends StatefulWidget {
 class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
   final LocationController locationController = Get.find<LocationController>();
   final RouteController controller = Get.find<RouteController>();
+  final OccurrenceController occurrenceController =
+      Get.find<OccurrenceController>();
+
+  // Só libera a saída da entrega depois de um desfecho registrado (entregue
+  // ou não). Começa bloqueado até a primeira checagem assíncrona terminar.
+  bool _canLeave = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshOutcomeStatus();
+  }
+
+  Future<void> _refreshOutcomeStatus() async {
+    final delivery = controller.selectedDelivery;
+    final hasOutcome = delivery == null
+        ? true
+        : await occurrenceController.hasOutcomeOccurrence(delivery.id);
+    if (mounted) setState(() => _canLeave = hasOutcome);
+  }
+
+  void _showOutcomeRequiredWarning() {
+    Get.snackbar(
+      'Ocorrência necessária',
+      'Registre uma ocorrência (entregue ou não) antes de sair desta entrega.',
+      backgroundColor: Styles.COLOR_WHITE,
+      colorText: Styles.COLOR_RED,
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Styles.COLOR_BLACKBLUE,
-      appBar: AppBar(
-        title: Text(
-          'Rota #${controller.selectedTransport?.codeTransport.toString().padLeft(3, '0') ?? '---'}',
-          style: TextStyle(
-            color: Styles.COLOR_WHITE,
-            fontWeight: FontWeight.bold,
+    return PopScope(
+      canPop: _canLeave,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _showOutcomeRequiredWarning();
+      },
+      child: Scaffold(
+        backgroundColor: Styles.COLOR_BLACKBLUE,
+        appBar: AppBar(
+          title: Text(
+            'Rota #${controller.selectedTransport?.codeTransport.toString().padLeft(3, '0') ?? '---'}',
+            style: TextStyle(
+              color: Styles.COLOR_WHITE,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.reply,
+                color: Styles.COLOR_LIGHTGREEN,
+                size: 28,
+              ),
+              onPressed: () {
+                if (_canLeave) {
+                  Get.offAllNamed('/route_details');
+                } else {
+                  _showOutcomeRequiredWarning();
+                }
+              },
+            ),
+          ],
         ),
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.reply,
-              color: Styles.COLOR_LIGHTGREEN,
-              size: 28,
-            ),
-            onPressed: () {
-              Get.offAllNamed('/route_details');
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(top: 5),
-              decoration: BoxDecoration(
-                color: Styles.COLOR_BACKGROUND,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
+        body: Column(
+          children: [
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.only(top: 5),
+                decoration: BoxDecoration(
+                  color: Styles.COLOR_BACKGROUND,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                  ),
                 ),
-              ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                ),
-                child: Column(
-                  children: [
-                    _buildDeliveryInfo(),
-                    Expanded(
-                      child: Obx(() => _buildMapSection(locationController)),
-                    ),
-                  ],
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDeliveryInfo(),
+                      Expanded(
+                        child: Obx(() => _buildMapSection(locationController)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

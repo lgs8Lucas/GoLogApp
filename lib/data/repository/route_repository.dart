@@ -3,10 +3,12 @@ import 'package:gologapp/data/datasource/remote/api_service.dart';
 import 'package:gologapp/data/model/delivery.dart';
 import 'package:gologapp/data/model/occurrence.dart';
 import 'package:gologapp/data/model/transport.dart';
+import 'package:gologapp/data/model/user.dart';
 import 'package:gologapp/data/datasource/local/transport_sql_service.dart';
 import 'package:gologapp/data/datasource/local/delivery_sql_service.dart';
 import 'package:gologapp/data/datasource/local/ocurrence_sql_service.dart';
 import 'package:gologapp/data/datasource/local/sql_service.dart';
+import 'package:gologapp/data/datasource/local/user_sql_service.dart';
 
 class RouteRepository {
   final ApiService _apiService;
@@ -14,6 +16,7 @@ class RouteRepository {
   final DeliverySqlService _deliverySqlService;
   final SqlService _sqlService;
   final OccurrenceSqlService _occurrenceSqlService;
+  final UserSqlService _userSqlService;
 
   RouteRepository(
     this._apiService,
@@ -21,7 +24,17 @@ class RouteRepository {
     this._deliverySqlService,
     this._sqlService,
     this._occurrenceSqlService,
+    this._userSqlService,
   );
+
+  // O backend identifica o motorista pelo id do usuário autenticado
+  // localmente (não existe um "driverId" separado — é o próprio id do
+  // usuário logado no app).
+  Future<String> _getLoggedDriverId() async {
+    final users = await _userSqlService.getAllUsers();
+    if (users.isEmpty) return '';
+    return users.first[User.columnId]?.toString() ?? '';
+  }
 
   Future<List<Transport>> getTransports() async {
     try {
@@ -38,7 +51,11 @@ class RouteRepository {
 
   Future<List<Transport>> fetchTransports() async {
     try {
-      final response = await _apiService.get('/shipment/list-personalized');
+      final driverId = await _getLoggedDriverId();
+      Map<String, String> customParams = {
+        'driverId': driverId,
+      };
+      final response = await _apiService.get('/shipment/list-personalized', customParams: customParams);
       if (response.statusCode == 200) {
         var decodedJson = jsonDecode(response.body);
         final List<Map<String, dynamic>> rawList = decodedJson is List
