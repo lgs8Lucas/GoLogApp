@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:gologapp/data/model/delivery.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
+import 'package:gologapp/presentation/widgets/error_banner.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
@@ -69,6 +70,11 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
+                  ErrorBanner(
+                    message: routeController.errorMessage,
+                    onDismiss: routeController.clearError,
+                  ),
+                  ErrorBanner(message: locationController.errorMessage),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

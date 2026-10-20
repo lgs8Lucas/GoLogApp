@@ -4,6 +4,7 @@ import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:gologapp/presentation/controller/occurrence_controller.dart';
 import 'package:gologapp/presentation/screen/events/occurrence_screen.dart';
+import 'package:gologapp/presentation/widgets/error_banner.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -126,6 +127,7 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ErrorBanner(message: locationController.errorMessage),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -273,12 +275,11 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
                       Styles.COLOR_LIGHTGREEN,
 
                       () {
-                        Get.find<OccurrenceController>().currentAction.value =
-                            ActionType.signature;
+                        Get.find<OccurrenceController>().startNewOccurrence(
+                          ActionType.signature,
+                        );
                         Get.to(() => OccurrenceScreen())?.then((_) {
-                          if (mounted) {
-                            setState(() {});
-                          }
+                          _refreshOutcomeStatus();
                         });
                       },
                     ),
@@ -289,12 +290,11 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
                       "Registrar Ocorrência",
                       Styles.COLOR_ORANGE,
                       () {
-                        Get.find<OccurrenceController>().currentAction.value =
-                            ActionType.observation;
+                        Get.find<OccurrenceController>().startNewOccurrence(
+                          ActionType.observation,
+                        );
                         Get.to(() => OccurrenceScreen())?.then((_) {
-                          if (mounted) {
-                            setState(() {});
-                          }
+                          _refreshOutcomeStatus();
                         });
                       },
                     ),
@@ -305,12 +305,11 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
               SizedBox(
                 width: 200,
                 child: _actionButton("Encerrar Rota", Styles.COLOR_RED, () {
-                  Get.find<OccurrenceController>().currentAction.value =
-                      ActionType.finish;
+                  Get.find<OccurrenceController>().startNewOccurrence(
+                    ActionType.finish,
+                  );
                   Get.to(() => OccurrenceScreen())?.then((_) {
-                    if (mounted) {
-                      setState(() {});
-                    }
+                    _refreshOutcomeStatus();
                   });
                 }),
               ),

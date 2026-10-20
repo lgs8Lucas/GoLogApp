@@ -86,6 +86,12 @@ class LoginController extends GetxController {
 
   Future<void> logout() async {
     await _userSqlService.deleteAllUsers();
+    // LoginController é um singleton permanente: sem isso, as credenciais
+    // do motorista anterior continuariam preenchidas na tela de login caso
+    // outro motorista use o mesmo aparelho depois.
+    emailController.clear();
+    passwordController.clear();
+    obscurePassword.value = true;
     Get.offAllNamed('/login');
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gologapp/presentation/controller/login_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
+import 'package:gologapp/presentation/widgets/error_banner.dart';
 import 'package:gologapp/util/styles.dart';
 import 'widgets/route_item.dart';
 
@@ -61,6 +62,10 @@ class RouteScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  ErrorBanner(
+                    message: routeController.errorMessage,
+                    onDismiss: routeController.clearError,
+                  ),
                   Expanded(
                     child: Obx(() {
                       if (routeController.isLoading.value) {

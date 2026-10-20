@@ -33,6 +33,18 @@ class OccurrenceController extends GetxController {
     super.onClose();
   }
 
+  // Ponto de entrada de toda nova ocorrência. O controller é um singleton
+  // reaproveitado por todas as entregas, então o estado transiente (traço
+  // da assinatura, texto de observação) precisa ser limpo aqui — se só
+  // limpar ao salvar, uma assinatura feita e não descartada corretamente
+  // (ou um texto digitado e abandonado) continua aparecendo na próxima
+  // entrega.
+  void startNewOccurrence(ActionType action) {
+    currentAction.value = action;
+    signatureController.clear();
+    observationTextController.clear();
+  }
+
   // Verifica se já existe uma ocorrência de desfecho (entregue ou não) para
   // essa entrega. Ignora as ocorrências automáticas de Início/Continuando
   // criadas ao iniciar a entrega — só Fim (entregue) ou Parada (ocorrência

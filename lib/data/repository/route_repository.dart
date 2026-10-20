@@ -30,7 +30,7 @@ class RouteRepository {
   // O backend identifica o motorista pelo id do usuário autenticado
   // localmente (não existe um "driverId" separado — é o próprio id do
   // usuário logado no app).
-  Future<String> _getLoggedDriverId() async {
+  Future<String> _getLoggedUserId() async {
     final users = await _userSqlService.getAllUsers();
     if (users.isEmpty) return '';
     return users.first[User.columnId]?.toString() ?? '';
@@ -51,9 +51,9 @@ class RouteRepository {
 
   Future<List<Transport>> fetchTransports() async {
     try {
-      final driverId = await _getLoggedDriverId();
+      final userId = await _getLoggedUserId();
       Map<String, String> customParams = {
-        'driverId': driverId,
+        'userId': userId,
       };
       final response = await _apiService.get('/shipment/list-personalized', customParams: customParams);
       if (response.statusCode == 200) {
