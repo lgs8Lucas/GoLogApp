@@ -12,6 +12,12 @@ import 'package:http/http.dart' as http;
 class ApiService {
   bool isSyncing = false;
 
+  // GET/HEAD/DELETE não carregam corpo, então tendem a ser rápidos. POST/PUT/
+  // PATCH podem levar anexos (ex: a assinatura em SVG de uma ocorrência),
+  // que em conexão móvel ruim facilmente passam de 5s — daí o timeout maior.
+  static const Duration _readTimeout = Duration(seconds: 10);
+  static const Duration _writeTimeout = Duration(seconds: 20);
+
   Future<Map<String, String>> _getHeaders() async {
     final Map<String, String> headers = {'Content-Type': 'application/json'};
 
@@ -44,9 +50,7 @@ class ApiService {
     }
     final url = Uri.parse(urlString);
     final headers = await _getHeaders();
-    var response = await http
-        .get(url, headers: headers)
-        .timeout(const Duration(seconds: 5));
+    var response = await http.get(url, headers: headers).timeout(_readTimeout);
     print('GET $endpoint - Status: ${response.statusCode}');
     if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
       return get(endpoint, allowRetry: false);
@@ -67,12 +71,12 @@ class ApiService {
             body: jsonEncode(body),
             headers: {'Content-Type': 'application/json'},
           )
-          .timeout(const Duration(seconds: 5));
+          .timeout(_writeTimeout);
     } else {
       final headers = await _getHeaders();
       final response = await http
           .post(url, headers: headers, body: jsonEncode(body))
-          .timeout(const Duration(seconds: 5));
+          .timeout(_writeTimeout);
       if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
         return post(endpoint, body, allowRetry: false);
       }
@@ -86,7 +90,7 @@ class ApiService {
 
     final response = await http
         .head(url, headers: headers)
-        .timeout(const Duration(seconds: 5));
+        .timeout(_readTimeout);
     if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
       return head(endpoint, allowRetry: false);
     }
@@ -99,7 +103,7 @@ class ApiService {
 
     final response = await http
         .delete(url, headers: headers)
-        .timeout(const Duration(seconds: 5));
+        .timeout(_readTimeout);
     if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
       return delete(endpoint, allowRetry: false);
     }
@@ -116,7 +120,7 @@ class ApiService {
 
     final response = await http
         .put(url, headers: headers, body: jsonEncode(body))
-        .timeout(const Duration(seconds: 5));
+        .timeout(_writeTimeout);
     if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
       return put(endpoint, body, allowRetry: false);
     }
@@ -133,7 +137,7 @@ class ApiService {
 
     final response = await http
         .patch(url, headers: headers, body: jsonEncode(body))
-        .timeout(const Duration(seconds: 5));
+        .timeout(_writeTimeout);
     if (response.statusCode == 401 && allowRetry && await _refreshSession()) {
       return patch(endpoint, body, allowRetry: false);
     }
@@ -179,6 +183,12 @@ class ApiService {
     isSyncing = true;
 
     try {
+      // Tenta renovar o token proativamente antes de sincronizar, em vez de
+      // só reagir a um 401 no meio do caminho — reduz a chance da primeira
+      // requisição da sincronização falhar por token vencido. Se não
+      // conseguir (ex: sem conexão), segue com o token atual mesmo assim;
+      // cada chamada individual ainda tem seu próprio retry em caso de 401.
+      await _refreshSession();
       await syncOccurrences();
       await syncCoords();
     } catch (e) {
@@ -195,14 +205,21 @@ class ApiService {
           .get('${Occurrence.columnIsSynced} = ?', [0]);
 
       for (final occurrence in unsyncedOccurrences) {
-        print(occurrence.toJson());
-        final response = await post('/occurrence', occurrence.toJson());
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          await occurrenceSqlService.markAsSynced(occurrence);
-        } else {
-          print(
-            'Falha ao sincronizar ocorrência: ${response.statusCode} - ${response.body}',
-          );
+        try {
+          print(occurrence.toJson());
+          final response = await post('/occurrence', occurrence.toJson());
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            await occurrenceSqlService.markAsSynced(occurrence);
+          } else {
+            print(
+              'Falha ao sincronizar ocorrência: ${response.statusCode} - ${response.body}',
+            );
+          }
+        } catch (e) {
+          // Uma falha (ex: timeout) nesta ocorrência não deve impedir que
+          // as demais pendentes sejam tentadas no mesmo ciclo — ela
+          // continua isSynced=false e será retentada na próxima sync.
+          print('Erro ao sincronizar ocorrência ${occurrence.localId}: $e');
         }
       }
     } catch (e) {
@@ -219,16 +236,19 @@ class ApiService {
       );
 
       for (final coordinate in unsyncedCoordinates) {
-        final response = await post('/telemetry', coordinate.toJson());
-        print(
-          coordinate.toJson(),
-        );
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          await coordinateSqlService.markAsSynced(coordinate);
-        } else {
-          print(
-            'Falha ao sincronizar coordenada: ${response.statusCode} - ${response.body}',
-          );
+        try {
+          print(coordinate.toJson());
+          final response = await post('/telemetry', coordinate.toJson());
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            await coordinateSqlService.markAsSynced(coordinate);
+          } else {
+            print(
+              'Falha ao sincronizar coordenada: ${response.statusCode} - ${response.body}',
+            );
+          }
+        } catch (e) {
+          // Mesmo raciocínio de syncOccurrences: isola a falha por item.
+          print('Erro ao sincronizar coordenada: $e');
         }
       }
     } catch (e) {
