@@ -24,7 +24,6 @@ class ApiService {
         final String? token = userMap['token'] ?? userMap[User.columnToken];
 
         if (token != null && token.isNotEmpty) {
-          print(token);
           headers['Authorization'] = 'Bearer $token';
         }
       }
