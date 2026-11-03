@@ -33,7 +33,6 @@ class MapUtils {
     double pitch = 55.0,
     double zoom = 16.5,
     bool followTruck = true,
-    bool showsUserLocation = true,
   }) {
     return GoogleMapWidgetAdapter(
       centerPosition: centerPosition,
@@ -46,7 +45,6 @@ class MapUtils {
       zoom: zoom,
       isDeliveryMode: true,
       followTruck: followTruck,
-      showsUserLocation: showsUserLocation,
     );
   }
 
@@ -119,7 +117,6 @@ class GoogleMapWidgetAdapter extends StatefulWidget {
   final double zoom;
   final bool isDeliveryMode;
   final bool followTruck;
-  final bool showsUserLocation;
 
   const GoogleMapWidgetAdapter({
     super.key,
@@ -133,7 +130,6 @@ class GoogleMapWidgetAdapter extends StatefulWidget {
     this.zoom = 17.0,
     this.isDeliveryMode = false,
     this.followTruck = false,
-    this.showsUserLocation = false,
   });
 
   @override
@@ -157,13 +153,11 @@ class _GoogleMapWidgetAdapterState extends State<GoogleMapWidgetAdapter> {
   void didUpdateWidget(GoogleMapWidgetAdapter oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Quando o ponto azul nativo está ativo, a posição do caminhão não faz
-    // mais parte do conjunto de marcadores — não há por que recalculá-los a
+    // A posição do usuário é desenhada pelo ponto azul nativo, então os
+    // marcadores só dependem das paradas — não precisam ser recalculados a
     // cada atualização de GPS.
     final pointsChanged = oldWidget.stopPoints != widget.stopPoints ||
-        oldWidget.routePoints != widget.routePoints ||
-        (!widget.showsUserLocation &&
-            oldWidget.truckPosition != widget.truckPosition);
+        oldWidget.routePoints != widget.routePoints;
     if (pointsChanged) {
       setState(() {
         _markers = _buildMarkers();
@@ -198,22 +192,6 @@ class _GoogleMapWidgetAdapterState extends State<GoogleMapWidgetAdapter> {
 
   Set<Marker> _buildMarkers() {
     final markers = <Marker>{};
-
-    // Com o ponto azul nativo (showsUserLocation), o próprio mapa já mostra
-    // a posição do usuário direto do sistema — não precisamos manter um
-    // Marker próprio sincronizado manualmente com o LocationController.
-    if (!widget.showsUserLocation) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId('truck'),
-          position: widget.truckPosition,
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueRed,
-          ),
-          zIndexInt: 1,
-        ),
-      );
-    }
 
     for (var i = 0; i < widget.stopPoints.length; i++) {
       markers.add(
@@ -257,7 +235,9 @@ class _GoogleMapWidgetAdapterState extends State<GoogleMapWidgetAdapter> {
         markers: _markers,
         polylines: _polylines,
         buildingsEnabled: widget.isDeliveryMode,
-        myLocationEnabled: widget.showsUserLocation,
+        // Ponto azul nativo do Google Maps, alimentado direto pelo GPS do
+        // sistema — dispensa um Marker manual para a posição do usuário.
+        myLocationEnabled: true,
         myLocationButtonEnabled: false,
         zoomControlsEnabled: false,
       ),
