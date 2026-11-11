@@ -3,12 +3,13 @@ import 'package:get/get.dart';
 import 'package:gologapp/data/model/delivery.dart';
 import 'package:gologapp/presentation/controller/location_controller.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
-import 'package:gologapp/presentation/widgets/error_banner.dart';
+import 'package:gologapp/presentation/screen/route_details/route_details_view.dart';
+import 'package:gologapp/presentation/widgets/map_placeholder.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+/// Liga os controllers ao layout puro [RouteDetailsView] e monta o mapa.
 class RouteDetailsScreen extends StatefulWidget {
   const RouteDetailsScreen({super.key});
 
@@ -19,6 +20,68 @@ class RouteDetailsScreen extends StatefulWidget {
 class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   final LocationController locationController = Get.find<LocationController>();
   final RouteController routeController = Get.find<RouteController>();
+  bool _isStarting = false;
+
+  Future<void> _start() async {
+    if (_isStarting) return;
+    setState(() => _isStarting = true);
+    try {
+      await routeController.startRoute();
+    } finally {
+      if (mounted) setState(() => _isStarting = false);
+    }
+  }
+
+  void _onTapDelivery(Delivery delivery) {
+    if (delivery.status == 'Finalizado') {
+      Get.snackbar(
+        'Parada concluída',
+        'Esta parada já foi finalizada.',
+        backgroundColor: Styles.COLOR_WHITE,
+        colorText: Styles.COLOR_TEXT,
+        icon: const Icon(
+          Icons.check_circle_rounded,
+          color: Styles.COLOR_LIGHTGREEN,
+        ),
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+    routeController.goToDeliveryRoute(delivery);
+  }
+
+  Widget _buildMap(List<Delivery> deliveries) {
+    final positions = MapUtils.getCoordinates(
+      routeController.selectedTransport?.routePlanned ?? '',
+    );
+    final stops = deliveries
+        .where((d) => d.destinationLat != 0.0 || d.destinationLng != 0.0)
+        .map((d) => LatLng(d.destinationLat, d.destinationLng))
+        .toList();
+
+    // Fallback: sem rota planejada nem paradas com coordenadas não há o que
+    // desenhar — antes, `positions.first` derrubava a tela nesse caso.
+    if (positions.isEmpty && stops.isEmpty) {
+      return const MapPlaceholder(
+        message: 'Rota sem coordenadas',
+        icon: Icons.wrong_location_outlined,
+      );
+    }
+
+    final centerAndZoom = MapUtils.getCenterAndZoom(
+      positions.isNotEmpty ? positions : stops,
+    );
+
+    return MapUtils.getMap(
+      truckPosition: locationController.truckPosition,
+      centerPosition: centerAndZoom['center'],
+      zoom: centerAndZoom['zoom'],
+      height: 240,
+      routePoints: [...positions],
+      stopPoints: [if (positions.isNotEmpty) positions.first, ...stops],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,208 +90,24 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       // observáveis — quem avisa que uma entrega mudou de status (ex: ao
       // registrar uma ocorrência em DeliveryRouteScreen) é
       // routeController.transportList.refresh(). Sem ler transportList
-      // aqui, este Obx nunca saberia que precisa reconstruir, e a tela
-      // ficaria mostrando o status antigo mesmo depois de finalizar uma
-      // entrega (o bug: status "Iniciado" na lista mesmo já finalizada).
+      // aqui, este Obx nunca saberia que precisa reconstruir.
       routeController.transportList.length;
 
-      List<Delivery> deliveries = Delivery.sortedBySequence(
+      final deliveries = Delivery.sortedBySequence(
         routeController.selectedTransport?.deliveries ?? [],
       );
 
-      List<LatLng> positions = MapUtils.getCoordinates(
-        routeController.selectedTransport?.routePlanned ?? '',
-      );
-
-      Map<String, dynamic> centerAndZoom = MapUtils.getCenterAndZoom(positions);
-
-      return Scaffold(
-        backgroundColor: Styles.COLOR_BLACKBLUE,
-        appBar: AppBar(
-          title: Text(
-            "Rota #${routeController.selectedTransport?.codeTransport.toString().padLeft(3, '0') ?? '---'}",
-            style: const TextStyle(
-              color: Styles.COLOR_WHITE,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.reply,
-                color: Styles.COLOR_LIGHTGREEN,
-                size: 28,
-              ),
-              onPressed: () {
-                Get.offAllNamed('/route_screen');
-              },
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 5),
-              decoration: const BoxDecoration(
-                color: Styles.COLOR_BACKGROUND,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(24)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    ErrorBanner(
-                      message: routeController.errorMessage,
-                      onDismiss: routeController.clearError,
-                    ),
-                    ErrorBanner(message: locationController.errorMessage),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.local_shipping, size: 35),
-                            const SizedBox(width: 10),
-                            Text(
-                              routeController.selectedTransport?.plate ?? '---',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.inventory_2_outlined, size: 35),
-                            const SizedBox(width: 10),
-                            Text(
-                              routeController
-                                      .selectedTransport
-                                      ?.deliveryQuantity
-                                      .toString() ??
-                                  '---',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    MapUtils.getMap(
-                      truckPosition: locationController.truckPosition,
-                      centerPosition: centerAndZoom['center'],
-                      zoom: centerAndZoom['zoom'],
-
-                      height: 300,
-                      routePoints: [...positions],
-                      stopPoints: [
-                        positions.first,
-                        ...deliveries.map(
-                          (d) => LatLng(d.destinationLat, d.destinationLng),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Text(
-                          "Paradas:",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: deliveries.length,
-                        itemBuilder: (context, index) {
-                          final delivery = deliveries[index];
-                          final bool isFinalized =
-                              delivery.status == "Finalizado";
-
-                          return GestureDetector(
-                            onTap: isFinalized
-                                ? () => Get.snackbar(
-                                    "Aviso",
-                                    "Esta parada já foi concluída.",
-                                    backgroundColor: Styles.COLOR_WHITE,
-                                    colorText: Styles.COLOR_ORANGE,
-                                  )
-                                : () => routeController.goToDeliveryRoute(
-                                    delivery,
-                                  ),
-                            child: Opacity(
-                              opacity: isFinalized ? 0.6 : 1.0,
-                              child: Stack(
-                                children: [
-                                  RouteItemDetails(delivery),
-                                  Positioned(
-                                    top: 18,
-                                    right: 20,
-                                    child: Text(
-                                      delivery.status.toUpperCase(),
-                                      style: TextStyle(
-                                        color: isFinalized
-                                            ? Colors.green
-                                            : Styles.COLOR_GRAY,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Botão de iniciar
-                    ElevatedButton(
-                      onPressed: () async {
-                        await routeController.startRoute();
-                        if (mounted) {
-                          setState(() {});
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Styles.COLOR_LIGHTGREEN,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 40,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: const Text(
-                        "Iniciar",
-                        style: TextStyle(
-                          color: Styles.COLOR_WHITE,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+      return RouteDetailsView(
+        transport: routeController.selectedTransport,
+        deliveries: deliveries,
+        map: _buildMap(deliveries),
+        errorMessage: routeController.errorMessage.value,
+        locationError: locationController.errorMessage.value,
+        onDismissError: routeController.clearError,
+        onBack: () => Get.offAllNamed('/route_screen'),
+        onTapDelivery: _onTapDelivery,
+        onStart: _start,
+        isStarting: _isStarting,
       );
     });
   }

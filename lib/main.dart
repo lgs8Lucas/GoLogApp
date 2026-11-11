@@ -19,7 +19,8 @@ import 'package:gologapp/presentation/screen/login/login_screen.dart';
 import 'package:gologapp/presentation/screen/route/route_screen.dart';
 import 'package:gologapp/presentation/screen/delivery_route/delivery_route_screen.dart';
 import 'package:gologapp/presentation/screen/route_details/route_details_screen.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:gologapp/presentation/screen/splash/splash_view.dart';
+import 'package:gologapp/util/app_theme.dart';
 import 'package:gologapp/data/datasource/local/sql_service.dart';
 
 void main() async {
@@ -36,7 +37,16 @@ void main() async {
   await Get.putAsync(() async => TransportSqlService());
 
   Get.put(ApiService());
-  Get.put(RouteRepository(Get.find<ApiService>(), Get.find<TransportSqlService>(), Get.find<DeliverySqlService>(), Get.find<SqlService>(), Get.find<OccurrenceSqlService>(), Get.find<UserSqlService>()));
+  Get.put(
+    RouteRepository(
+      Get.find<ApiService>(),
+      Get.find<TransportSqlService>(),
+      Get.find<DeliverySqlService>(),
+      Get.find<SqlService>(),
+      Get.find<OccurrenceSqlService>(),
+      Get.find<UserSqlService>(),
+    ),
+  );
   Get.put(AuthApi(Get.find<ApiService>()));
   Get.put(AuthRepository(Get.find<AuthApi>()));
   Get.put(RouteController(), permanent: true);
@@ -46,9 +56,7 @@ void main() async {
     LoginController(Get.find<AuthRepository>(), Get.find<UserSqlService>()),
     permanent: true,
   );
-  Get.put(
-    OccurrenceController(),
-  );
+  Get.put(OccurrenceController());
   runApp(const MyApp());
 }
 
@@ -62,13 +70,10 @@ class MyApp extends StatelessWidget {
       future: loginController.tryKeepConnected(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const MaterialApp(
+          return MaterialApp(
             debugShowCheckedModeBanner: false,
-            home: Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(color: Styles.COLOR_BLACKBLUE),
-              ),
-            ),
+            theme: AppTheme.light,
+            home: const SplashView(),
           );
         }
         final initialRoute = snapshot.data ?? '/login';
@@ -76,7 +81,7 @@ class MyApp extends StatelessWidget {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'GoLog',
-          theme: ThemeData(scaffoldBackgroundColor: Styles.COLOR_BACKGROUND),
+          theme: AppTheme.light,
           initialRoute: initialRoute,
           getPages: [
             GetPage(

@@ -47,3 +47,5 @@ app.*.map.json
 
 # Ambiente do VsCode
 .vscode/
+# Widget Preview related
+.widget_preview/

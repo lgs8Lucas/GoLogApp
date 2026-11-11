@@ -3,13 +3,14 @@ import 'package:get/get.dart';
 import 'package:gologapp/data/datasource/local/delivery_sql_service.dart';
 import 'package:gologapp/data/datasource/local/ocurrence_sql_service.dart';
 import 'package:gologapp/data/datasource/local/user_sql_service.dart';
+import 'package:gologapp/data/model/action_type.dart';
 import 'package:gologapp/data/model/delivery.dart';
 import 'package:gologapp/data/model/occurrence.dart';
 import 'package:gologapp/data/model/user.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
 import 'package:signature/signature.dart';
 
-enum ActionType { signature, observation, finish }
+export 'package:gologapp/data/model/action_type.dart';
 
 class OccurrenceController extends GetxController {
   final RouteController _routeController = Get.find<RouteController>();
@@ -19,6 +20,9 @@ class OccurrenceController extends GetxController {
   final DeliverySqlService _deliverySqlService = Get.find<DeliverySqlService>();
 
   var currentAction = ActionType.signature.obs;
+  // Trava o botão enquanto salva: evita ocorrências duplicadas por toque
+  // duplo no botão de confirmar.
+  var isSaving = false.obs;
   final observationTextController = TextEditingController();
   final SignatureController signatureController = SignatureController(
     penStrokeWidth: 3,
@@ -58,6 +62,16 @@ class OccurrenceController extends GetxController {
   }
 
   Future<void> saveOccurrence() async {
+    if (isSaving.value) return;
+    isSaving.value = true;
+    try {
+      await _saveOccurrence();
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  Future<void> _saveOccurrence() async {
     final delivery = _routeController.selectedDelivery;
     final transport = _routeController.selectedTransport;
 
@@ -68,7 +82,9 @@ class OccurrenceController extends GetxController {
         ? (users.first[User.columnId]?.toString() ?? '')
         : '';
 
-    String type = currentAction.value == ActionType.signature || currentAction.value == ActionType.finish
+    String type =
+        currentAction.value == ActionType.signature ||
+            currentAction.value == ActionType.finish
         ? OccurrenceType.Fim.name
         : OccurrenceType.Parada.name;
     String description = currentAction.value == ActionType.signature
