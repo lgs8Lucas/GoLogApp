@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_navigation_flutter/google_navigation_flutter.dart'
+    show LatLng;
 import 'package:gologapp/data/datasource/local/coordinate_sql_service.dart';
 import 'package:gologapp/data/model/coordinate.dart';
 import 'package:gologapp/presentation/controller/route_controller.dart';
@@ -18,8 +19,8 @@ class LocationController extends GetxController {
 
   LatLng get truckPosition {
     if (latitude.value == 0.0 && longitude.value == 0.0)
-      return const LatLng(0.0, 0.0);
-    return LatLng(latitude.value, longitude.value);
+      return const LatLng(latitude: 0.0, longitude: 0.0);
+    return LatLng(latitude: latitude.value, longitude: longitude.value);
   }
 
   StreamSubscription<Position>? _positionStreamSubscription;

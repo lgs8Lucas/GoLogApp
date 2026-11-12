@@ -47,5 +47,15 @@
 	<true/>
 	<key>DartDefines</key>
 	<string>$(DART_DEFINES)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>O GoLog usa sua localização para navegar até as entregas e registrar o trajeto da rota.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>O GoLog usa sua localização para manter a navegação ativa e registrar o trajeto mesmo com o app em segundo plano.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>O GoLog usa os sensores de movimento para melhorar a precisão da navegação.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 </dict>
 </plist>

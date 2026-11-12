@@ -2,49 +2,28 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_navigation_flutter/google_navigation_flutter.dart';
+import 'package:gologapp/util/styles.dart';
 
+/// Utilitários de mapa. Usa o `GoogleMapsMapView` do google_navigation_flutter
+/// (e não o google_maps_flutter): o Navigation SDK já embute o Maps SDK e os
+/// dois plugins juntos geram classes duplicadas no build Android.
 class MapUtils {
+  /// Mapa de visão geral da rota (sem navegação), com a linha planejada e
+  /// os marcadores das paradas.
   static Widget getMap({
     required LatLng centerPosition,
     int height = 350,
-    required LatLng truckPosition,
     List<LatLng> routePoints = const [],
     List<LatLng> stopPoints = const [],
     double zoom = 17.0,
   }) {
-    return GoogleMapWidgetAdapter(
+    return RouteOverviewMap(
       centerPosition: centerPosition,
       height: height,
-      truckPosition: truckPosition,
       routePoints: routePoints,
       stopPoints: stopPoints,
       zoom: zoom,
-    );
-  }
-
-  static Widget getDeliveryMap({
-    required LatLng centerPosition,
-    int height = 350,
-    required LatLng truckPosition,
-    List<LatLng> routePoints = const [],
-    List<LatLng> stopPoints = const [],
-    double bearing = 0.0,
-    double pitch = 55.0,
-    double zoom = 16.5,
-    bool followTruck = true,
-  }) {
-    return GoogleMapWidgetAdapter(
-      centerPosition: centerPosition,
-      height: height,
-      truckPosition: truckPosition,
-      routePoints: routePoints,
-      stopPoints: stopPoints,
-      pitch: pitch,
-      bearing: bearing,
-      zoom: zoom,
-      isDeliveryMode: true,
-      followTruck: followTruck,
     );
   }
 
@@ -53,16 +32,13 @@ class MapUtils {
       encodedPolyline,
     );
     return decodedPoints
-        .map((point) => LatLng(point.latitude, point.longitude))
+        .map((p) => LatLng(latitude: p.latitude, longitude: p.longitude))
         .toList();
   }
 
   static Map<String, dynamic> getCenterAndZoom(List<LatLng> positions) {
     if (positions.isEmpty) {
-      return {
-        'center': const LatLng(0, 0),
-        'zoom': 2.0,
-      };
+      return {'center': const LatLng(latitude: 0, longitude: 0), 'zoom': 2.0};
     }
 
     num minLat = positions.first.latitude;
@@ -84,8 +60,8 @@ class MapUtils {
     }
 
     LatLng center = LatLng(
-      sumLat / positions.length,
-      sumLng / positions.length,
+      latitude: sumLat / positions.length,
+      longitude: sumLng / positions.length,
     );
 
     num latDelta = maxLat - minLat;
@@ -99,147 +75,106 @@ class MapUtils {
       zoom = zoom.clamp(3.0, 15.0);
     }
 
-    return {
-      'center': center,
-      'zoom': zoom,
-    };
+    return {'center': center, 'zoom': zoom};
   }
 }
 
-class GoogleMapWidgetAdapter extends StatefulWidget {
+class RouteOverviewMap extends StatefulWidget {
   final LatLng centerPosition;
   final int height;
-  final LatLng truckPosition;
   final List<LatLng> routePoints;
   final List<LatLng> stopPoints;
-  final double pitch;
-  final double bearing;
   final double zoom;
-  final bool isDeliveryMode;
-  final bool followTruck;
 
-  const GoogleMapWidgetAdapter({
+  const RouteOverviewMap({
     super.key,
     required this.centerPosition,
     this.height = 350,
-    required this.truckPosition,
     this.routePoints = const [],
     this.stopPoints = const [],
-    this.pitch = 0.0,
-    this.bearing = 0.0,
     this.zoom = 17.0,
-    this.isDeliveryMode = false,
-    this.followTruck = false,
   });
 
   @override
-  State<GoogleMapWidgetAdapter> createState() =>
-      _GoogleMapWidgetAdapterState();
+  State<RouteOverviewMap> createState() => _RouteOverviewMapState();
 }
 
-class _GoogleMapWidgetAdapterState extends State<GoogleMapWidgetAdapter> {
-  GoogleMapController? _controller;
-  late Set<Marker> _markers;
-  late Set<Polyline> _polylines;
+class _RouteOverviewMapState extends State<RouteOverviewMap> {
+  GoogleMapViewController? _controller;
 
-  @override
-  void initState() {
-    super.initState();
-    _markers = _buildMarkers();
-    _polylines = _buildPolylines();
+  Future<void> _onViewCreated(GoogleMapViewController controller) async {
+    _controller = controller;
+    try {
+      // Ponto azul nativo, alimentado direto pelo GPS do sistema.
+      await controller.setMyLocationEnabled(true);
+    } catch (_) {
+      // Sem permissão de localização: o mapa segue funcionando sem o ponto.
+    }
+    await _drawOverlays();
   }
 
   @override
-  void didUpdateWidget(GoogleMapWidgetAdapter oldWidget) {
+  void didUpdateWidget(RouteOverviewMap oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final pointsChanged =
+        !_sameList(oldWidget.stopPoints, widget.stopPoints) ||
+        !_sameList(oldWidget.routePoints, widget.routePoints);
+    if (pointsChanged) _drawOverlays();
 
-    // A posição do usuário é desenhada pelo ponto azul nativo, então os
-    // marcadores só dependem das paradas — não precisam ser recalculados a
-    // cada atualização de GPS.
-    final pointsChanged = oldWidget.stopPoints != widget.stopPoints ||
-        oldWidget.routePoints != widget.routePoints;
-    if (pointsChanged) {
-      setState(() {
-        _markers = _buildMarkers();
-        _polylines = _buildPolylines();
-      });
-    }
-
-    // Em modo "followTruck", a câmera persegue o ícone do motorista: toda
-    // vez que uma nova localização é coletada, o zoom/centro é reafirmado
-    // sobre a posição atual do caminhão. Fora desse modo (ex: visão geral
-    // da rota), a câmera só se move quando o centro definido externamente
-    // muda (ex: troca de transporte selecionado).
-    final cameraTarget =
-        widget.followTruck ? widget.truckPosition : widget.centerPosition;
-    final oldCameraTarget = widget.followTruck
-        ? oldWidget.truckPosition
-        : oldWidget.centerPosition;
-
-    if (cameraTarget != oldCameraTarget) {
+    if (oldWidget.centerPosition != widget.centerPosition) {
       _controller?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: cameraTarget,
-            zoom: widget.zoom,
-            tilt: widget.pitch,
-            bearing: widget.bearing,
-          ),
-        ),
+        CameraUpdate.newLatLngZoom(widget.centerPosition, widget.zoom),
       );
     }
   }
 
-  Set<Marker> _buildMarkers() {
-    final markers = <Marker>{};
-
-    for (var i = 0; i < widget.stopPoints.length; i++) {
-      markers.add(
-        Marker(
-          markerId: MarkerId('stop_$i'),
-          position: widget.stopPoints[i],
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueOrange,
-          ),
-        ),
-      );
+  bool _sameList(List<LatLng> a, List<LatLng> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
     }
-
-    return markers;
+    return true;
   }
 
-  Set<Polyline> _buildPolylines() {
-    if (widget.routePoints.isEmpty) return {};
-    return {
-      Polyline(
-        polylineId: const PolylineId('route'),
-        points: widget.routePoints,
-        color: Colors.blueAccent,
-        width: 6,
-      ),
-    };
+  Future<void> _drawOverlays() async {
+    final c = _controller;
+    if (c == null) return;
+    try {
+      await c.clearMarkers();
+      await c.clearPolylines();
+      if (widget.routePoints.isNotEmpty) {
+        await c.addPolylines([
+          PolylineOptions(
+            points: widget.routePoints,
+            strokeColor: Styles.COLOR_BLUE,
+            strokeWidth: 6,
+          ),
+        ]);
+      }
+      if (widget.stopPoints.isNotEmpty) {
+        await c.addMarkers([
+          for (var i = 0; i < widget.stopPoints.length; i++)
+            MarkerOptions(position: widget.stopPoints[i], zIndex: i.toDouble()),
+        ]);
+      }
+    } catch (e) {
+      debugPrint('Erro ao desenhar a rota no mapa: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: widget.height.toDouble(),
-      child: GoogleMap(
+      child: GoogleMapsMapView(
+        onViewCreated: _onViewCreated,
         initialCameraPosition: CameraPosition(
           target: widget.centerPosition,
           zoom: widget.zoom,
-          tilt: widget.pitch,
-          bearing: widget.bearing,
         ),
-        onMapCreated: (controller) => _controller = controller,
-        markers: _markers,
-        polylines: _polylines,
-        buildingsEnabled: widget.isDeliveryMode,
-        // Ponto azul nativo do Google Maps, alimentado direto pelo GPS do
-        // sistema — dispensa um Marker manual para a posição do usuário.
-        myLocationEnabled: true,
-        myLocationButtonEnabled: false,
-        zoomControlsEnabled: false,
+        initialZoomControlsEnabled: false,
+        initialMapToolbarEnabled: false,
       ),
     );
   }

@@ -7,7 +7,7 @@ import 'package:gologapp/presentation/screen/route_details/route_details_view.da
 import 'package:gologapp/presentation/widgets/map_placeholder.dart';
 import 'package:gologapp/util/map_utils.dart';
 import 'package:gologapp/util/styles.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_navigation_flutter/google_navigation_flutter.dart';
 
 /// Liga os controllers ao layout puro [RouteDetailsView] e monta o mapa.
 class RouteDetailsScreen extends StatefulWidget {
@@ -57,7 +57,10 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     );
     final stops = deliveries
         .where((d) => d.destinationLat != 0.0 || d.destinationLng != 0.0)
-        .map((d) => LatLng(d.destinationLat, d.destinationLng))
+        .map(
+          (d) =>
+              LatLng(latitude: d.destinationLat, longitude: d.destinationLng),
+        )
         .toList();
 
     // Fallback: sem rota planejada nem paradas com coordenadas não há o que
@@ -74,7 +77,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     );
 
     return MapUtils.getMap(
-      truckPosition: locationController.truckPosition,
       centerPosition: centerAndZoom['center'],
       zoom: centerAndZoom['zoom'],
       height: 240,
