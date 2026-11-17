@@ -268,7 +268,11 @@ class _SignaturePad extends StatelessWidget {
         border: Border.all(color: Styles.COLOR_BORDER),
         boxShadow: Styles.SHADOW_CARD,
       ),
+      // StackFit.expand: o Stack ocupa todo o espaço disponível. Sem isso o
+      // tamanho dele vinha do placeholder "Assine aqui"; ao começar a assinar
+      // o placeholder vira SizedBox.shrink e o quadro colapsava para 0.
       child: Stack(
+        fit: StackFit.expand,
         children: [
           // Linha de base + legenda, como num canhoto de papel.
           Positioned(
