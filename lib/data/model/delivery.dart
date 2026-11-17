@@ -1,30 +1,36 @@
-class Delivery {
-  static final String tableName = 'delivery';
-  static final String columnId = 'id';
-  static final String columnWeight = 'weight';
-  static final String columnVolume = 'volume';
-  static final String columnScheduledCollection = 'scheduledCollection';
-  static final String columnScheduledDelivery = 'scheduledDelivery';
-  static final String columnRoutePlanned = 'routePlanned';
-  static final String columnRouteCompleted = 'routeCompleted';
-  static final String columnStatus = 'status';
-  static final String columnDeliverySequence = 'deliverySequence';
+import 'package:golog/data/model/delivery_status.dart';
+import 'package:golog/util/json_parse.dart';
 
-  static final String columnDeliveryTypeId = 'deliveryTypeId';
-  static final String columnTransportId = 'transportId';
-  static final String columnIsPickup = 'isPickup';
-  static final String columnDestinationAddress = 'destinationAddress';
-  static final String columnDestinationLat = 'destinationLat';
-  static final String columnDestinationLng = 'destinationLng';
-  static final String columnRecipientName = 'recipientName';
+export 'package:golog/data/model/delivery_status.dart';
+
+class Delivery {
+  static const String tableName = 'delivery';
+  static const String columnId = 'id';
+  static const String columnWeight = 'weight';
+  static const String columnVolume = 'volume';
+  static const String columnScheduledDate = 'scheduledDate';
+  static const String columnRoutePlanned = 'routePlanned';
+  static const String columnRouteCompleted = 'routeCompleted';
+  static const String columnStatus = 'status';
+  static const String columnDeliverySequence = 'deliverySequence';
+  static const String columnDeliveryTypeId = 'deliveryTypeId';
+  static const String columnTransportId = 'transportId';
+  static const String columnIsPickup = 'isPickup';
+  static const String columnDestinationAddress = 'destinationAddress';
+  static const String columnDestinationLat = 'destinationLat';
+  static const String columnDestinationLng = 'destinationLng';
+  static const String columnRecipientName = 'recipientName';
 
   final String id;
   final double weight;
   final double volume;
-  final DateTime shedulind;
+
+  /// Data/hora agendada da parada (campo `shedulind` no backend). Pode
+  /// faltar — nesse caso a tela mostra "Não informado".
+  final DateTime? scheduledDate;
   final String routePlanned;
   final String routeCompleted;
-  late String status;
+  String status;
   final int deliverySequence;
   final bool isPickup;
 
@@ -39,7 +45,7 @@ class Delivery {
     required this.id,
     required this.weight,
     required this.volume,
-    required this.shedulind,
+    required this.scheduledDate,
     required this.routePlanned,
     required this.routeCompleted,
     required this.status,
@@ -53,45 +59,33 @@ class Delivery {
     required this.destinationLng,
   });
 
-  factory Delivery.fromJson(Map<String, dynamic> json) {
-    return Delivery(
-      id: json['id'] ?? '',
-      weight: (json['weight'] as num?)?.toDouble() ?? 0.0,
-      volume: (json['volume'] as num?)?.toDouble() ?? 0.0,
-      shedulind: DateTime.parse(json['shedulind']),
-      routePlanned: json['routeStop']?['routePlanned'] ?? '',
-      routeCompleted: json['routeCompleted'] ?? '',
-      status: json['status'] ?? '',
-      deliverySequence: (json['routeStop']?['sequenceOrder'] as num?)?.toInt() ?? 0,
-      deliveryTypeId: json['shipmentType'] != null
-          ? json['shipmentType']['id'] ?? ''
-          : '',
-      transportId: json['transport'] != null
-          ? json['transport']['id'] ?? ''
-          : '',
-      destinationAddress: json['address'] != null
-          ? _getAddressFromJson(json['address'])
-          : '',
-      recipientName: json['customer']?['legalName'] ?? '',
-      isPickup: json["typeOperation"] == "COLETA",
-      destinationLat: double.tryParse(json['address']?['latitude']??'0') ?? 0.0,
-      destinationLng: double.tryParse(json['address']?['longitude']??'0') ?? 0.0,
-    );
-  }
+  bool get isFinished => status == DeliveryStatus.finished;
+  bool get isStarted => status == DeliveryStatus.started;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'weight': weight,
-      'volume': volume,
-      'shedulind': shedulind.toIso8601String(),
-      'routePlanned': routePlanned,
-      'routeCompleted': routeCompleted,
-      'status': status,
-      'deliverySequence': deliverySequence,
-      'isPickup': isPickup,
-      'recipientName': recipientName,
-    };
+  factory Delivery.fromJson(Map<String, dynamic> json) {
+    final routeStop = JsonParse.toMap(json['routeStop']);
+    final address = JsonParse.toMap(json['address']);
+    return Delivery(
+      id: JsonParse.toStr(json['id']),
+      weight: JsonParse.toDouble(json['weight']),
+      volume: JsonParse.toDouble(json['volume']),
+      scheduledDate: JsonParse.toDate(json['shedulind']),
+      routePlanned: JsonParse.toStr(routeStop?['routePlanned']),
+      routeCompleted: JsonParse.toStr(json['routeCompleted']),
+      status: JsonParse.toStr(json['status']),
+      deliverySequence: JsonParse.toInt(routeStop?['sequenceOrder']),
+      deliveryTypeId: JsonParse.toStr(
+        JsonParse.toMap(json['shipmentType'])?['id'],
+      ),
+      transportId: JsonParse.toStr(JsonParse.toMap(json['transport'])?['id']),
+      destinationAddress: _addressFromJson(address),
+      recipientName: JsonParse.toStr(
+        JsonParse.toMap(json['customer'])?['legalName'],
+      ),
+      isPickup: json['typeOperation'] == 'COLETA',
+      destinationLat: JsonParse.toDouble(address?['latitude']),
+      destinationLng: JsonParse.toDouble(address?['longitude']),
+    );
   }
 
   Map<String, dynamic> toDb() {
@@ -99,7 +93,7 @@ class Delivery {
       columnId: id,
       columnWeight: weight,
       columnVolume: volume,
-      columnScheduledCollection: shedulind.toIso8601String(),
+      columnScheduledDate: scheduledDate?.toIso8601String(),
       columnRoutePlanned: routePlanned,
       columnRouteCompleted: routeCompleted,
       columnStatus: status,
@@ -116,35 +110,37 @@ class Delivery {
 
   factory Delivery.fromDb(Map<String, dynamic> db) {
     return Delivery(
-      id: db[columnId],
-      weight: db[columnWeight],
-      volume: db[columnVolume],
-      shedulind: DateTime.parse(db[columnScheduledCollection]),
-      routePlanned: db[columnRoutePlanned],
-      routeCompleted: db[columnRouteCompleted],
-      status: db[columnStatus],
-      deliverySequence: db[columnDeliverySequence],
+      id: db[columnId] ?? '',
+      weight: JsonParse.toDouble(db[columnWeight]),
+      volume: JsonParse.toDouble(db[columnVolume]),
+      scheduledDate: JsonParse.toDate(db[columnScheduledDate]),
+      routePlanned: db[columnRoutePlanned] ?? '',
+      routeCompleted: db[columnRouteCompleted] ?? '',
+      status: db[columnStatus] ?? '',
+      deliverySequence: JsonParse.toInt(db[columnDeliverySequence]),
       deliveryTypeId: db[columnDeliveryTypeId] ?? '',
       transportId: db[columnTransportId] ?? '',
       destinationAddress: db[columnDestinationAddress] ?? '',
-      destinationLat: (db[columnDestinationLat] as num?)?.toDouble() ?? 0.0,
-      destinationLng: (db[columnDestinationLng] as num?)?.toDouble() ?? 0.0,
+      destinationLat: JsonParse.toDouble(db[columnDestinationLat]),
+      destinationLng: JsonParse.toDouble(db[columnDestinationLng]),
       recipientName: db[columnRecipientName] ?? '',
       isPickup: db[columnIsPickup] == 1,
     );
   }
 
-  static String _getAddressFromJson(json) {
+  static String _addressFromJson(Map<String, dynamic>? json) {
     if (json == null) return '';
-    String street = json['street'] ?? '';
-    String number = json['number'] ?? '';
-    String city = json['city'] ?? '';
-    String state = json['state'] ?? '';
-    String zipCode = json['zipCode'] ?? '';
+    final street = JsonParse.toStr(json['street']);
+    final number = JsonParse.toStr(json['number']);
+    final city = JsonParse.toStr(json['city']);
+    final state = JsonParse.toStr(json['state']);
+    final zipCode = JsonParse.toStr(json['zipCode']);
     return '$street, $number, $city, $state, $zipCode';
   }
 
+  /// Nova lista ordenada pela sequência da parada (não altera a original).
   static List<Delivery> sortedBySequence(List<Delivery> deliveries) {
-    return deliveries..sort((a, b) => a.deliverySequence.compareTo(b.deliverySequence));
+    return [...deliveries]
+      ..sort((a, b) => a.deliverySequence.compareTo(b.deliverySequence));
   }
 }

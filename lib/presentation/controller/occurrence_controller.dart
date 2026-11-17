@@ -1,23 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:golog/data/datasource/local/delivery_sql_service.dart';
-import 'package:golog/data/datasource/local/ocurrence_sql_service.dart';
+import 'package:golog/data/datasource/local/occurrence_sql_service.dart';
 import 'package:golog/data/datasource/local/user_sql_service.dart';
 import 'package:golog/data/model/action_type.dart';
 import 'package:golog/data/model/delivery.dart';
 import 'package:golog/data/model/occurrence.dart';
-import 'package:golog/data/model/user.dart';
 import 'package:golog/presentation/controller/route_controller.dart';
+import 'package:golog/presentation/controller/sync_controller.dart';
+import 'package:golog/util/log.dart';
+import 'package:golog/util/styles.dart';
 import 'package:signature/signature.dart';
 
 export 'package:golog/data/model/action_type.dart';
 
 class OccurrenceController extends GetxController {
-  final RouteController _routeController = Get.find<RouteController>();
-  final OccurrenceSqlService _occurrenceSqlService =
-      Get.find<OccurrenceSqlService>();
-  final UserSqlService _userSqlService = Get.find<UserSqlService>();
-  final DeliverySqlService _deliverySqlService = Get.find<DeliverySqlService>();
+  final RouteController _routeController;
+  final OccurrenceSqlService _occurrenceSqlService;
+  final UserSqlService _userSqlService;
+  final DeliverySqlService _deliverySqlService;
+  final SyncController _syncController;
+
+  OccurrenceController(
+    this._routeController,
+    this._occurrenceSqlService,
+    this._userSqlService,
+    this._deliverySqlService,
+    this._syncController,
+  );
 
   var currentAction = ActionType.signature.obs;
   // Trava o botão enquanto salva: evita ocorrências duplicadas por toque
@@ -74,33 +84,26 @@ class OccurrenceController extends GetxController {
   Future<void> _saveOccurrence() async {
     final delivery = _routeController.selectedDelivery;
     final transport = _routeController.selectedTransport;
-
     if (delivery == null || transport == null) return;
 
-    final users = await _userSqlService.getAllUsers();
-    final senderId = users.isNotEmpty
-        ? (users.first[User.columnId]?.toString() ?? '')
-        : '';
+    final action = currentAction.value;
+    final finishesDelivery =
+        action == ActionType.signature || action == ActionType.finish;
 
-    String type =
-        currentAction.value == ActionType.signature ||
-            currentAction.value == ActionType.finish
-        ? OccurrenceType.Fim.name
-        : OccurrenceType.Parada.name;
-    String description = currentAction.value == ActionType.signature
-        ? "Entrega finalizada com sucesso"
-        : observationTextController.text;
+    final senderId = await _userSqlService.getCurrentUserId();
 
-    String attachment = "";
-    if (currentAction.value == ActionType.signature &&
-        signatureController.isNotEmpty) {
-      final svg = signatureController.toRawSVG();
-      attachment = svg ?? "";
+    String attachment = '';
+    if (action == ActionType.signature && signatureController.isNotEmpty) {
+      attachment = signatureController.toRawSVG() ?? '';
     }
 
     final occurrence = Occurrence(
-      type: type,
-      description: description,
+      type: finishesDelivery
+          ? OccurrenceType.Fim.name
+          : OccurrenceType.Parada.name,
+      description: action == ActionType.signature
+          ? 'Entrega finalizada com sucesso'
+          : observationTextController.text.trim(),
       attachment: attachment,
       deliveryId: delivery.id,
       transportId: transport.id,
@@ -109,26 +112,40 @@ class OccurrenceController extends GetxController {
       dateTime: DateTime.now(),
     );
 
-    await _occurrenceSqlService.insertOccurrence(occurrence);
-    if (currentAction.value == ActionType.signature ||
-        currentAction.value == ActionType.finish) {
-      delivery.status = "Finalizado";
-      await _deliverySqlService.updateDelivery(
-        {Delivery.columnStatus: "Finalizado"},
-        '${Delivery.columnId} = ? AND ${Delivery.columnTransportId} = ?',
-        [delivery.id, transport.id],
-      );
-      _routeController.transportList.refresh();
-      if (currentAction.value == ActionType.finish) {
-        _routeController.inProgress = false;
+    try {
+      await _occurrenceSqlService.insertOccurrence(occurrence);
+      if (finishesDelivery) {
+        await _deliverySqlService.updateStatus(
+          delivery,
+          DeliveryStatus.finished,
+        );
+        delivery.status = DeliveryStatus.finished;
       }
+    } catch (e) {
+      appLog('Erro ao salvar ocorrência: $e');
+      Get.snackbar(
+        'Erro ao salvar',
+        'Não foi possível registrar a ocorrência. Tente novamente.',
+        backgroundColor: Styles.COLOR_WHITE,
+        colorText: Styles.COLOR_RED,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    // Tenta enviar na hora; sem conexão, fica pendente para o próximo ciclo.
+    _syncController.notifyNewRecord();
+
+    if (action == ActionType.finish) {
+      // "Finalizar rota": encerra a parada atual e para de gravar o trajeto.
+      _routeController.transportList.refresh();
+      _routeController.stopTracking();
+    } else if (finishesDelivery) {
+      _routeController.onDeliveryFinished();
     }
 
     observationTextController.clear();
-    Get.back();
-    if (currentAction.value == ActionType.signature ||
-        currentAction.value == ActionType.finish) {
-      Get.back();
-    }
+    Get.back(); // fecha a tela de ocorrência
+    if (finishesDelivery) Get.back(); // sai da parada
   }
 }

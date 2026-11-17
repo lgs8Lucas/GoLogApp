@@ -30,9 +30,10 @@ class RouteItemDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isFinalized = delivery.status == 'Finalizado';
+    final bool isFinalized = delivery.isFinished;
     final bool isLate =
-        !isFinalized && delivery.shedulind.isBefore(now ?? DateTime.now());
+        !isFinalized &&
+        (delivery.scheduledDate?.isBefore(now ?? DateTime.now()) ?? false);
     final StatusStyle status = StatusStyle.of(delivery.status);
     final Color dotColor = isLate ? Styles.COLOR_RED : status.color;
 
@@ -124,7 +125,7 @@ class RouteItemDetails extends StatelessWidget {
                           const SizedBox(height: 10),
                           _line(
                             Icons.schedule_rounded,
-                            FormatUtils.dateTime(delivery.shedulind),
+                            FormatUtils.dateTime(delivery.scheduledDate),
                             color: isLate ? Styles.COLOR_RED : null,
                           ),
                           _line(

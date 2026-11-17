@@ -1,69 +1,38 @@
-import 'package:get/get.dart';
-import 'package:golog/data/model/delivery.dart'; // Ajuste o caminho conforme seu projeto
+import 'package:golog/data/model/delivery.dart';
 import 'package:sqflite/sqflite.dart';
-import 'sql_service.dart';
 
-class DeliverySqlService extends GetxService {
-  final Database _db = Get.find<SqlService>().db;
+class DeliverySqlService {
+  final Database _db;
 
-  Future<int> insertDelivery(
-    Delivery row, {
-    Transaction? txn,
-  }) async {
-    if (txn != null) return await txn.insert(Delivery.tableName, row.toDb());
-    return await _db.insert(Delivery.tableName, row.toDb());
-  }
+  DeliverySqlService(this._db);
 
-  Future<List<Delivery>> get({String? where, List<dynamic>? whereArgs}) async {
-    final List<Map<String, dynamic>> rows = await _db.query(
-      Delivery.tableName,
-      where: where,
-      whereArgs: whereArgs,
-    );
-    return rows.map((row) => Delivery.fromDb(row)).toList();
-  }
-
-  Future<int> deleteDelivery(String id, {Transaction? txn}) async {
-    if (txn != null) {
-      return await txn.delete(
+  Future<int> insertDelivery(Delivery row, {Transaction? txn}) =>
+      (txn ?? _db).insert(
         Delivery.tableName,
-        where: '${Delivery.columnId} = ?',
-        whereArgs: [id],
+        row.toDb(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
       );
-    }
 
-    return await _db.delete(
+  Future<List<Delivery>> getByTransport(String transportId) async {
+    final rows = await _db.query(
       Delivery.tableName,
-      where: '${Delivery.columnId} = ?',
-      whereArgs: [id],
+      where: '${Delivery.columnTransportId} = ?',
+      whereArgs: [transportId],
     );
+    return rows.map(Delivery.fromDb).toList();
   }
 
-  Future<int> deleteAllDeliveries({Transaction? txn}) async {
-    if (txn != null) return await txn.delete(Delivery.tableName);
-    return await _db.delete(Delivery.tableName);
-  }
+  Future<int> deleteAllDeliveries({Transaction? txn}) =>
+      (txn ?? _db).delete(Delivery.tableName);
 
-  Future<int> updateDelivery(
-    Map<String, dynamic> values,
-    String where,
-    List<dynamic> whereArgs, {
+  Future<int> updateStatus(
+    Delivery delivery,
+    String status, {
     Transaction? txn,
-  }) async {
-    if (txn != null) {
-      return await txn.update(
-        Delivery.tableName,
-        values,
-        where: where,
-        whereArgs: whereArgs,
-      );
-    }
-
-    return await _db.update(
-      Delivery.tableName,
-      values,
-      where: where,
-      whereArgs: whereArgs,
-    );
-  }
+  }) => (txn ?? _db).update(
+    Delivery.tableName,
+    {Delivery.columnStatus: status},
+    where: '${Delivery.columnId} = ? AND ${Delivery.columnTransportId} = ?',
+    whereArgs: [delivery.id, delivery.transportId],
+  );
 }

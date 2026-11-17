@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:golog/data/model/delivery.dart';
+import 'package:golog/data/model/sync_status.dart';
 import 'package:golog/data/model/transport.dart';
 import 'package:golog/presentation/screen/route_details/widget/route_item_details.dart';
 import 'package:golog/presentation/widgets/app_button.dart';
@@ -8,6 +9,7 @@ import 'package:golog/presentation/widgets/error_banner.dart';
 import 'package:golog/presentation/widgets/map_placeholder.dart';
 import 'package:golog/presentation/widgets/page_shell.dart';
 import 'package:golog/presentation/widgets/state_views.dart';
+import 'package:golog/presentation/widgets/sync_indicator.dart';
 import 'package:golog/preview/preview_data.dart';
 import 'package:golog/preview/preview_wrapper.dart';
 import 'package:golog/util/format_utils.dart';
@@ -26,6 +28,8 @@ class RouteDetailsView extends StatelessWidget {
   final ValueChanged<Delivery> onTapDelivery;
   final VoidCallback onStart;
   final bool isStarting;
+  final SyncStatus? syncStatus;
+  final VoidCallback? onSyncNow;
 
   const RouteDetailsView({
     super.key,
@@ -39,6 +43,8 @@ class RouteDetailsView extends StatelessWidget {
     this.locationError = '',
     this.onDismissError,
     this.isStarting = false,
+    this.syncStatus,
+    this.onSyncNow,
   });
 
   @override
@@ -59,9 +65,9 @@ class RouteDetailsView extends StatelessWidget {
       );
     }
 
-    final int done = deliveries.where((d) => d.status == 'Finalizado').length;
+    final int done = deliveries.where((d) => d.isFinished).length;
     final bool allDone = deliveries.isNotEmpty && done == deliveries.length;
-    final bool inProgress = deliveries.any((d) => d.status == 'Iniciado');
+    final bool inProgress = deliveries.any((d) => d.isStarted);
 
     return PageShell(
       title: 'Rota ${FormatUtils.routeCode(t.codeTransport)}',
@@ -88,6 +94,8 @@ class RouteDetailsView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
             sliver: SliverList.list(
               children: [
+                if (syncStatus != null)
+                  SyncIndicator(status: syncStatus!, onSyncNow: onSyncNow),
                 AppBanner(message: errorMessage, onDismiss: onDismissError),
                 AppBanner(message: locationError, type: BannerType.warning),
                 _Summary(

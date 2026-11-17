@@ -1,14 +1,14 @@
-import 'dart:convert';
+import 'package:golog/data/datasource/local/delivery_sql_service.dart';
+import 'package:golog/data/datasource/local/occurrence_sql_service.dart';
+import 'package:golog/data/datasource/local/sql_service.dart';
+import 'package:golog/data/datasource/local/transport_sql_service.dart';
+import 'package:golog/data/datasource/local/user_sql_service.dart';
 import 'package:golog/data/datasource/remote/api_service.dart';
 import 'package:golog/data/model/delivery.dart';
 import 'package:golog/data/model/occurrence.dart';
 import 'package:golog/data/model/transport.dart';
-import 'package:golog/data/model/user.dart';
-import 'package:golog/data/datasource/local/transport_sql_service.dart';
-import 'package:golog/data/datasource/local/delivery_sql_service.dart';
-import 'package:golog/data/datasource/local/ocurrence_sql_service.dart';
-import 'package:golog/data/datasource/local/sql_service.dart';
-import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/util/json_parse.dart';
+import 'package:golog/util/log.dart';
 
 class RouteRepository {
   final ApiService _apiService;
@@ -27,107 +27,135 @@ class RouteRepository {
     this._userSqlService,
   );
 
-  // O backend identifica o motorista pelo id do usuário autenticado
-  // localmente (não existe um "driverId" separado — é o próprio id do
-  // usuário logado no app).
-  Future<String> _getLoggedUserId() async {
-    final users = await _userSqlService.getAllUsers();
-    if (users.isEmpty) return '';
-    return users.first[User.columnId]?.toString() ?? '';
-  }
-
+  /// Busca as rotas do motorista no servidor, aplica o que já foi
+  /// registrado offline e salva no cache. Se o servidor falhar, devolve o
+  /// cache local.
   Future<List<Transport>> getTransports() async {
     try {
-      List<Transport> transports = [];
-      transports = await fetchTransports();
-      transports = await mergeLocalData(transports);
+      final transports = await fetchTransports();
+      await mergeLocalData(transports);
       await saveTransports(transports);
     } catch (e) {
-      print("Erro ao buscar transportes Online: $e");
+      appLog('Erro ao buscar transportes online: $e');
     }
-    List<Transport> transports = await _transportSqlService.get();
-    return transports;
+    return _transportSqlService.getAll();
   }
 
   Future<List<Transport>> fetchTransports() async {
-    try {
-      final userId = await _getLoggedUserId();
-      Map<String, String> customParams = {
-        'userId': userId,
-      };
-      final response = await _apiService.get('/shipment/list-personalized', customParams: customParams);
-      if (response.statusCode == 200) {
-        var decodedJson = jsonDecode(response.body);
-        final List<Map<String, dynamic>> rawList = decodedJson is List
-            ? List.castFrom(decodedJson)
-            : [decodedJson];
-        Map<String, Transport> transportByUUID = {};
-        for (var raw in rawList) {
-          if (raw['transport'] == null) continue;
+    // O backend identifica o motorista pelo id do usuário logado (não há
+    // um "driverId" separado).
+    final userId = await _userSqlService.getCurrentUserId();
+    if (userId.isEmpty) throw StateError('Nenhum usuário logado.');
 
-          Transport transport = Transport.fromJson(raw['transport']);
-          if (transportByUUID[transport.id] != null)
-            transport = transportByUUID[transport.id]!;
-          else
-            transportByUUID[transport.id] = transport;
-          Delivery delivery = Delivery.fromJson(raw);
-          transport.deliveries.add(delivery);
-        }
-        return transportByUUID.values.toList();
-      } else {
-        throw Exception(
-          'Erro ao buscar transportes. Código: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      throw Exception('Falha na comunicação com o servidor: $e');
+    final response = await _apiService.get(
+      '/shipment/list-personalized',
+      query: {'userId': userId},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Erro ao buscar transportes. Código: ${response.statusCode}',
+      );
     }
+    final decoded = ApiService.tryDecode(response.body);
+    if (decoded == null) throw const FormatException('Resposta inválida');
+    return parseShipments(decoded is List ? decoded : [decoded]);
+  }
+
+  /// Agrupa a lista de shipments (entregas) do backend por transporte.
+  /// Um registro mal formado é descartado sem derrubar a lista toda.
+  static List<Transport> parseShipments(List<dynamic> rawList) {
+    final transportById = <String, Transport>{};
+    for (final item in rawList) {
+      try {
+        final raw = JsonParse.toMap(item);
+        final rawTransport = JsonParse.toMap(raw?['transport']);
+        if (raw == null || rawTransport == null) continue;
+
+        final parsed = Transport.fromJson(rawTransport);
+        if (parsed.id.isEmpty) continue;
+        final transport = transportById.putIfAbsent(parsed.id, () => parsed);
+
+        final delivery = Delivery.fromJson(raw);
+        if (delivery.id.isEmpty) continue;
+        transport.deliveries.add(delivery);
+      } catch (e) {
+        appLog('Shipment ignorado por erro de parse: $e');
+      }
+    }
+    return transportById.values.toList();
   }
 
   Future<void> saveTransports(List<Transport> transports) async {
     await _sqlService.db.transaction((txn) async {
       await _transportSqlService.deleteAllTransports(txn: txn);
       await _deliverySqlService.deleteAllDeliveries(txn: txn);
-      for (var transport in transports) {
-        await _transportSqlService.insertTransport(
-          transport,
-          txn: txn,
-        );
-        for (var delivery in transport.deliveries) {
+      for (final transport in transports) {
+        await _transportSqlService.insertTransport(transport, txn: txn);
+        for (final delivery in transport.deliveries) {
           await _deliverySqlService.insertDelivery(delivery, txn: txn);
         }
       }
     });
   }
 
-  Future<List<Transport>> mergeLocalData(List<Transport> transports) async {
-    List<Delivery> deliveries = transports.expand((t) => t.deliveries).toList();
-    if (deliveries.isEmpty) return transports;
-    final placeholders = List.filled(deliveries.length, '?').join(',');
-    List<Occurrence> occurrences = await _occurrenceSqlService.get(
-      '${Occurrence.columnDeliveryId} IN ($placeholders)',
-      deliveries.map((d) => d.id).toList(),
-    );
-    Map<String, List<Occurrence>> occurrencesByShipmentId = {};
-    for (var occurrence in occurrences) {
-      occurrencesByShipmentId.putIfAbsent(occurrence.deliveryId, () => []);
-      occurrencesByShipmentId[occurrence.deliveryId]!.add(occurrence);
+  /// Remove rotas/entregas em cache (usado no logout). Ocorrências e
+  /// coordenadas pendentes são mantidas até serem sincronizadas.
+  Future<void> clearCache() async {
+    await _sqlService.db.transaction((txn) async {
+      await _transportSqlService.deleteAllTransports(txn: txn);
+      await _deliverySqlService.deleteAllDeliveries(txn: txn);
+    });
+  }
+
+  Future<void> mergeLocalData(List<Transport> transports) async {
+    final ids = transports
+        .expand((t) => t.deliveries)
+        .map((d) => d.id)
+        .toSet()
+        .toList();
+    if (ids.isEmpty) return;
+
+    // SQLite limita a quantidade de parâmetros por consulta: busca em lotes.
+    const chunk = 500;
+    final occurrences = <Occurrence>[];
+    for (var i = 0; i < ids.length; i += chunk) {
+      final part = ids.sublist(i, (i + chunk).clamp(0, ids.length));
+      final placeholders = List.filled(part.length, '?').join(',');
+      occurrences.addAll(
+        await _occurrenceSqlService.get(
+          '${Occurrence.columnDeliveryId} IN ($placeholders)',
+          part,
+        ),
+      );
     }
-    for (var transport in transports) {
-      for (var delivery in transport.deliveries) {
-        if (delivery.status == 'Finalizado') continue;
-        if (occurrencesByShipmentId.containsKey(delivery.id)) {
-          for (var occurrence in occurrencesByShipmentId[delivery.id]!) {
-            if (occurrence.type == OccurrenceType.Fim.name) {
-              delivery.status = 'Finalizado';
-              break;
-            } else if (occurrence.type == OccurrenceType.Inicio.name) {
-              delivery.status = 'Iniciado';
-            }
-          }
+    applyLocalOccurrences(transports, occurrences);
+  }
+
+  /// Ajusta o status das entregas conforme ocorrências registradas no
+  /// aparelho que o servidor talvez ainda não conheça: Fim -> Finalizado,
+  /// Início -> Iniciado. Nunca "regride" uma entrega já finalizada.
+  static void applyLocalOccurrences(
+    List<Transport> transports,
+    List<Occurrence> occurrences,
+  ) {
+    final byDelivery = <String, List<Occurrence>>{};
+    for (final o in occurrences) {
+      (byDelivery[o.deliveryId] ??= []).add(o);
+    }
+    for (final transport in transports) {
+      for (final delivery in transport.deliveries) {
+        if (delivery.isFinished) continue;
+        final list = byDelivery[delivery.id];
+        if (list == null) continue;
+        final related = list.where(
+          (o) => o.transportId.isEmpty || o.transportId == transport.id,
+        );
+        if (related.any((o) => o.type == OccurrenceType.Fim.name)) {
+          delivery.status = DeliveryStatus.finished;
+        } else if (related.any((o) => o.type == OccurrenceType.Inicio.name)) {
+          delivery.status = DeliveryStatus.started;
         }
       }
     }
-    return transports;
   }
 }

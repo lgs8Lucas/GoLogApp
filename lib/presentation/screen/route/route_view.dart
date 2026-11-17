@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:golog/data/model/sync_status.dart';
 import 'package:golog/data/model/transport.dart';
 import 'package:golog/presentation/screen/route/widgets/route_item.dart';
 import 'package:golog/presentation/widgets/error_banner.dart';
 import 'package:golog/presentation/widgets/page_shell.dart';
 import 'package:golog/presentation/widgets/state_views.dart';
+import 'package:golog/presentation/widgets/sync_indicator.dart';
 import 'package:golog/preview/preview_data.dart';
 import 'package:golog/preview/preview_wrapper.dart';
 import 'package:golog/util/styles.dart';
@@ -18,6 +20,8 @@ class RouteListView extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final ValueChanged<Transport> onTapTransport;
   final VoidCallback onLogout;
+  final SyncStatus? syncStatus;
+  final VoidCallback? onSyncNow;
 
   const RouteListView({
     super.key,
@@ -28,6 +32,8 @@ class RouteListView extends StatelessWidget {
     required this.onTapTransport,
     required this.onLogout,
     this.onDismissError,
+    this.syncStatus,
+    this.onSyncNow,
   });
 
   @override
@@ -48,6 +54,8 @@ class RouteListView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (syncStatus != null)
+            SyncIndicator(status: syncStatus!, onSyncNow: onSyncNow),
           AppBanner(message: errorMessage, onDismiss: onDismissError),
           Expanded(child: _buildBody()),
         ],
@@ -143,6 +151,8 @@ Widget routeListPreview() {
     transports: PreviewData.transports(),
     isLoading: false,
     errorMessage: '',
+    syncStatus: const SyncStatus(pendingOccurrences: 1),
+    onSyncNow: () {},
     onRefresh: () async {},
     onTapTransport: (_) {},
     onLogout: () {},

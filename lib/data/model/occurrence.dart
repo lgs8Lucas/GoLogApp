@@ -1,17 +1,16 @@
-enum OccurrenceType { Inicio, Fim, Continuando, Parada, Assinatura }
+enum OccurrenceType { Inicio, Fim, Continuando, Parada }
 
 class Occurrence {
-  static final String tableName = 'occurrence';
-  static final String columnType = 'type';
-  static final String columnDescription = 'description';
-  static final String columnAttachment = 'attachment';
-  static final String columnDeliveryId = 'deliveryId';
-  static final String columnTransportId = 'transportId';
-  static final String columnSenderId = 'senderId';
-  static final String columnIsSynced = 'isSynced';
-  static final String columnLocalId = 'localId';
-  static final String columnDateTime = 'dateTime';
-
+  static const String tableName = 'occurrence';
+  static const String columnType = 'type';
+  static const String columnDescription = 'description';
+  static const String columnAttachment = 'attachment';
+  static const String columnDeliveryId = 'deliveryId';
+  static const String columnTransportId = 'transportId';
+  static const String columnSenderId = 'senderId';
+  static const String columnIsSynced = 'isSynced';
+  static const String columnLocalId = 'localId';
+  static const String columnDateTime = 'dateTime';
 
   final String type;
   final String description;

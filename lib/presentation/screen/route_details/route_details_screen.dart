@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:golog/data/model/delivery.dart';
 import 'package:golog/presentation/controller/location_controller.dart';
 import 'package:golog/presentation/controller/route_controller.dart';
+import 'package:golog/presentation/controller/sync_controller.dart';
 import 'package:golog/presentation/screen/route_details/route_details_view.dart';
 import 'package:golog/presentation/widgets/map_placeholder.dart';
 import 'package:golog/util/map_utils.dart';
@@ -20,6 +21,7 @@ class RouteDetailsScreen extends StatefulWidget {
 class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   final LocationController locationController = Get.find<LocationController>();
   final RouteController routeController = Get.find<RouteController>();
+  final SyncController syncController = Get.find<SyncController>();
   bool _isStarting = false;
 
   Future<void> _start() async {
@@ -32,8 +34,8 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     }
   }
 
-  void _onTapDelivery(Delivery delivery) {
-    if (delivery.status == 'Finalizado') {
+  Future<void> _onTapDelivery(Delivery delivery) async {
+    if (delivery.isFinished) {
       Get.snackbar(
         'Parada concluída',
         'Esta parada já foi finalizada.',
@@ -48,7 +50,15 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       );
       return;
     }
-    routeController.goToDeliveryRoute(delivery);
+    // Abrir uma parada é iniciá-la: registra Início/Continuação e ativa
+    // a gravação do trajeto, como pelo botão "Iniciar rota".
+    if (_isStarting) return;
+    setState(() => _isStarting = true);
+    try {
+      await routeController.startDelivery(delivery);
+    } finally {
+      if (mounted) setState(() => _isStarting = false);
+    }
   }
 
   Widget _buildMap(List<Delivery> deliveries) {
@@ -106,10 +116,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
         errorMessage: routeController.errorMessage.value,
         locationError: locationController.errorMessage.value,
         onDismissError: routeController.clearError,
-        onBack: () => Get.offAllNamed('/route_screen'),
+        onBack: Get.back,
         onTapDelivery: _onTapDelivery,
         onStart: _start,
         isStarting: _isStarting,
+        syncStatus: syncController.status.value,
+        onSyncNow: syncController.syncNow,
       );
     });
   }

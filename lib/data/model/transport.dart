@@ -1,21 +1,20 @@
 import 'package:golog/data/model/delivery.dart';
+import 'package:golog/util/json_parse.dart';
 
 class Transport {
-  static final String tableName = 'transport';
-  static final String columnId = 'id';
-  static final String columnRoutePlanned = 'routePlanned';
-  static final String columnRouteCompleted = 'routeCompleted';
-  static final String columnDeliveryQuantity = 'shipmentQuantity';
-  static final String columnTimeStopped = 'timeStopped';
-  static final String columnTotalTime = 'totalTime';
-  static final String columnCodeTransport = 'codeTransport';
-
-  static final String columnDriverId = 'driverId';
-  static final String columnTransporterId = 'transporterId';
-  static final String columnEquipamentGroupId = 'equipamentGroupId';
-  static final String columnEquipmentId = 'equipmentId';
-  static final String columnPlate = 'plate';
-
+  static const String tableName = 'transport';
+  static const String columnId = 'id';
+  static const String columnRoutePlanned = 'routePlanned';
+  static const String columnRouteCompleted = 'routeCompleted';
+  static const String columnDeliveryQuantity = 'shipmentQuantity';
+  static const String columnTimeStopped = 'timeStopped';
+  static const String columnTotalTime = 'totalTime';
+  static const String columnCodeTransport = 'codeTransport';
+  static const String columnDriverId = 'driverId';
+  static const String columnTransporterId = 'transporterId';
+  static const String columnEquipmentGroupId = 'equipmentGroupId';
+  static const String columnEquipmentId = 'equipmentId';
+  static const String columnPlate = 'plate';
 
   final String id;
   final String routePlanned;
@@ -26,11 +25,11 @@ class Transport {
   final int codeTransport;
   final String driverId;
   final String transporterId;
-  final String equipamentGroupId;
+  final String equipmentGroupId;
   final String equipmentId;
   final String plate;
 
-  late List<Delivery> deliveries;
+  List<Delivery> deliveries = [];
 
   Transport({
     required this.id,
@@ -42,44 +41,34 @@ class Transport {
     required this.totalTime,
     required this.driverId,
     required this.transporterId,
-    required this.equipamentGroupId,
+    required this.equipmentGroupId,
     required this.equipmentId,
     required this.plate,
-  }) {
-    deliveries = [];
-  }
+  });
+
+  /// Paradas ainda não finalizadas.
+  bool get hasPendingDeliveries => deliveries.any((d) => !d.isFinished);
 
   factory Transport.fromJson(Map<String, dynamic> json) {
-    var equipmentGroup = json['equipamentGroup'];
-    var truck = equipmentGroup?["equipament1"];
+    // As chaves `equipamentGroup`/`equipament1` seguem o contrato do backend.
+    final equipmentGroup = JsonParse.toMap(json['equipamentGroup']);
+    final truck = JsonParse.toMap(equipmentGroup?['equipament1']);
     return Transport(
-      id: json['id'] ?? '',
-      codeTransport: json['codeTransport'] ?? 0,
-      routePlanned: json['routePlanned'] ?? '',
-      routeCompleted: json['routeCompleted'] ?? '',
-      deliveryQuantity: json[columnDeliveryQuantity] ?? 0,
-      timeStopped: json['timeStopped'] ?? 0,
-      totalTime: json['totalTime'] ?? 0,
-      driverId: json['driver'] != null ? json['driver']['id'] ?? '' : '',
-      transporterId: json['transporter'] != null
-          ? json['transporter']['id'] ?? ''
-          : '',
-      equipamentGroupId: equipmentGroup?['id'] ?? '',
-      equipmentId: truck?['id'] ?? '',
-      plate: truck?["plate"] ?? '',
+      id: JsonParse.toStr(json['id']),
+      codeTransport: JsonParse.toInt(json['codeTransport']),
+      routePlanned: JsonParse.toStr(json['routePlanned']),
+      routeCompleted: JsonParse.toStr(json['routeCompleted']),
+      deliveryQuantity: JsonParse.toInt(json[columnDeliveryQuantity]),
+      timeStopped: JsonParse.toDouble(json['timeStopped']),
+      totalTime: JsonParse.toDouble(json['totalTime']),
+      driverId: JsonParse.toStr(JsonParse.toMap(json['driver'])?['id']),
+      transporterId: JsonParse.toStr(
+        JsonParse.toMap(json['transporter'])?['id'],
+      ),
+      equipmentGroupId: JsonParse.toStr(equipmentGroup?['id']),
+      equipmentId: JsonParse.toStr(truck?['id']),
+      plate: JsonParse.toStr(truck?['plate']),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'codeTransport': codeTransport,
-      'routePlanned': routePlanned,
-      'routeCompleted': routeCompleted,
-      'deliveryQuantity': deliveryQuantity,
-      'timeStopped': timeStopped,
-      'totalTime': totalTime,
-    };
   }
 
   Map<String, dynamic> toDb() {
@@ -93,7 +82,7 @@ class Transport {
       columnCodeTransport: codeTransport,
       columnDriverId: driverId,
       columnTransporterId: transporterId,
-      columnEquipamentGroupId: equipamentGroupId,
+      columnEquipmentGroupId: equipmentGroupId,
       columnEquipmentId: equipmentId,
       columnPlate: plate,
     };
@@ -101,16 +90,16 @@ class Transport {
 
   factory Transport.fromDb(Map<String, dynamic> db) {
     return Transport(
-      id: db[columnId],
-      codeTransport: db[columnCodeTransport],
-      routePlanned: db[columnRoutePlanned],
-      routeCompleted: db[columnRouteCompleted],
-      deliveryQuantity: db[columnDeliveryQuantity],
-      timeStopped: db[columnTimeStopped],
-      totalTime: db[columnTotalTime],
+      id: db[columnId] ?? '',
+      codeTransport: JsonParse.toInt(db[columnCodeTransport]),
+      routePlanned: db[columnRoutePlanned] ?? '',
+      routeCompleted: db[columnRouteCompleted] ?? '',
+      deliveryQuantity: JsonParse.toInt(db[columnDeliveryQuantity]),
+      timeStopped: JsonParse.toDouble(db[columnTimeStopped]),
+      totalTime: JsonParse.toDouble(db[columnTotalTime]),
       driverId: db[columnDriverId] ?? '',
       transporterId: db[columnTransporterId] ?? '',
-      equipamentGroupId: db[columnEquipamentGroupId] ?? '',
+      equipmentGroupId: db[columnEquipmentGroupId] ?? '',
       equipmentId: db[columnEquipmentId] ?? '',
       plate: db[columnPlate] ?? '',
     );

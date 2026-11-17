@@ -390,7 +390,9 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
 
   void _openOccurrence(ActionType action) {
     occurrenceController.startNewOccurrence(action);
-    Get.to(() => const OccurrenceScreen())?.then((_) => _refreshOutcomeStatus());
+    Get.to(
+      () => const OccurrenceScreen(),
+    )?.then((_) => _refreshOutcomeStatus());
   }
 
   // ---------------------------------------------------------------------
@@ -447,7 +449,7 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
           map: _buildMap(),
           onBack: () {
             if (_canLeave) {
-              Get.offAllNamed('/route_details');
+              Get.back();
             } else {
               _showOutcomeRequiredWarning();
             }

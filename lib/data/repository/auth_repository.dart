@@ -1,37 +1,75 @@
-import 'dart:convert';
-import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:golog/data/datasource/local/credential_store.dart';
 import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/data/datasource/remote/api_service.dart';
 import 'package:golog/data/datasource/remote/auth_api_service.dart';
 import 'package:golog/data/model/user.dart';
 
+class AuthException implements Exception {
+  final String message;
+  AuthException(this.message);
+  @override
+  String toString() => message;
+}
+
 class AuthRepository {
   final AuthApi _authApi;
-  final UserSqlService _userSqlService = Get.find<UserSqlService>();
-  final _storage = GetStorage();
+  final UserSqlService _userSqlService;
+  final CredentialStore _credentials;
 
-  AuthRepository(this._authApi);
+  AuthRepository(this._authApi, this._userSqlService, this._credentials);
 
-  Future<User> login(String email, String password) async {
+  Future<User> login(
+    String email,
+    String password, {
+    required bool keepConnected,
+  }) async {
     final response = await _authApi.login(email, password);
-    final data = jsonDecode(response.body);
+    final data = ApiService.tryDecode(response.body);
+    final map = data is Map ? data : const {};
 
-    if (response.statusCode == 200) {
-      final String token = data['token'];
-      await _storage.write('jwt_token', token);
-      final user = User(
-        id: data['userId'],
-        name: 'Motorista',
-        email: email,
-        token: token,
-        keepConnected: true,
-        password: password,
+    if (response.statusCode != 200) {
+      final message = map['message'];
+      throw AuthException(
+        message is String && message.isNotEmpty
+            ? message
+            : _messageForStatus(response.statusCode),
       );
-      await _userSqlService.deleteAllUsers();
-      await _userSqlService.insertUser(user.toDb());
-      return user;
-    } else {
-      throw Exception(data['message'] ?? 'Falha na autenticação');
     }
+
+    final token = map['token'];
+    final userId = map['userId']?.toString() ?? '';
+    if (token is! String || token.isEmpty || userId.isEmpty) {
+      throw AuthException('Resposta inválida do servidor.');
+    }
+
+    final name = map['name'] ?? map['userName'];
+    final user = User(
+      id: userId,
+      name: name is String && name.isNotEmpty ? name : 'Motorista',
+      email: email,
+      keepConnected: keepConnected,
+    );
+    await _credentials.saveToken(token);
+    await _credentials.savePassword(password);
+    await _userSqlService.replaceUser(user);
+    return user;
+  }
+
+  Future<bool> hasValidSession() async {
+    final user = await _userSqlService.getCurrentUser();
+    if (user == null || !user.keepConnected) return false;
+    final token = await _credentials.getToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  Future<void> logout() async {
+    await _credentials.clear();
+    await _userSqlService.deleteAllUsers();
+  }
+
+  static String _messageForStatus(int status) {
+    if (status == 401 || status == 403) return 'E-mail ou senha inválidos.';
+    if (status >= 500) return 'Servidor indisponível. Tente novamente.';
+    return 'Falha na autenticação (código $status).';
   }
 }

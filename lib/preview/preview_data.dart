@@ -6,7 +6,7 @@ import 'package:golog/data/model/transport.dart';
 class PreviewData {
   static Delivery delivery({
     int sequence = 1,
-    String status = 'Pendente',
+    String status = DeliveryStatus.pending,
     bool isPickup = false,
     String address = 'Av. Paulista, 1578, São Paulo, SP, 01310-200',
     String recipient = 'Mercado Bom Preço LTDA',
@@ -16,7 +16,7 @@ class PreviewData {
       id: 'delivery-$sequence',
       weight: 120,
       volume: 2,
-      shedulind: DateTime(2026, 11, 11, 9, 30).add(offset),
+      scheduledDate: DateTime(2026, 11, 11, 9, 30).add(offset),
       routePlanned: '',
       routeCompleted: '',
       status: status,
@@ -34,7 +34,7 @@ class PreviewData {
   static List<Delivery> deliveries() => [
     delivery(
       sequence: 1,
-      status: 'Finalizado',
+      status: DeliveryStatus.finished,
       isPickup: true,
       address: 'R. Vergueiro, 3185, São Paulo, SP, 04101-300',
       recipient: 'Centro de Distribuição Sul',
@@ -42,7 +42,7 @@ class PreviewData {
     ),
     delivery(
       sequence: 2,
-      status: 'Iniciado',
+      status: DeliveryStatus.started,
       offset: const Duration(hours: 1, minutes: 15),
     ),
     delivery(
@@ -75,7 +75,7 @@ class PreviewData {
       totalTime: 0,
       driverId: 'driver',
       transporterId: 'transporter',
-      equipamentGroupId: 'group',
+      equipmentGroupId: 'group',
       equipmentId: 'equipment',
       plate: plate,
     )..deliveries = list;
@@ -95,8 +95,8 @@ class PreviewData {
       code: 17,
       plate: '',
       deliveries: [
-        delivery(sequence: 1, status: 'Finalizado'),
-        delivery(sequence: 2, status: 'Finalizado'),
+        delivery(sequence: 1, status: DeliveryStatus.finished),
+        delivery(sequence: 2, status: DeliveryStatus.finished),
       ],
     ),
   ];

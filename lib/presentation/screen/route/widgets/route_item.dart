@@ -22,16 +22,18 @@ class RouteItemWidget extends StatelessWidget {
     final int total = deliveries.isNotEmpty
         ? deliveries.length
         : transport.deliveryQuantity;
-    final int done = deliveries.where((d) => d.status == 'Finalizado').length;
-    final bool anyStarted = deliveries.any((d) => d.status == 'Iniciado');
+    final int done = deliveries.where((d) => d.isFinished).length;
+    final bool anyStarted = deliveries.any((d) => d.isStarted);
     final double progress = total == 0 ? 0 : done / total;
 
     final String routeStatus = total > 0 && done == total
-        ? 'Finalizado'
-        : (anyStarted || done > 0 ? 'Iniciado' : 'Pendente');
+        ? DeliveryStatus.finished
+        : (anyStarted || done > 0
+              ? DeliveryStatus.started
+              : DeliveryStatus.pending);
 
     final String start = deliveries.isNotEmpty
-        ? FormatUtils.dateTime(deliveries.first.shedulind)
+        ? FormatUtils.dateTime(deliveries.first.scheduledDate)
         : 'Sem previsão';
 
     return Padding(
