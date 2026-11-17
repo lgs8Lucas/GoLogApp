@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:gologapp/data/datasource/local/coordinate_sql_service.dart';
-import 'package:gologapp/data/datasource/local/ocurrence_sql_service.dart';
-import 'package:gologapp/data/datasource/local/user_sql_service.dart';
-import 'package:gologapp/data/model/coordinate.dart';
-import 'package:gologapp/data/model/occurrence.dart';
-import 'package:gologapp/data/model/user.dart';
-import 'package:gologapp/util/connection_util.dart';
+import 'package:golog/data/datasource/local/coordinate_sql_service.dart';
+import 'package:golog/data/datasource/local/ocurrence_sql_service.dart';
+import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/data/model/coordinate.dart';
+import 'package:golog/data/model/occurrence.dart';
+import 'package:golog/data/model/user.dart';
+import 'package:golog/util/connection_util.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {

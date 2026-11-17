@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/presentation/controller/location_controller.dart';
-import 'package:gologapp/presentation/controller/route_controller.dart';
-import 'package:gologapp/presentation/screen/route_details/route_details_view.dart';
-import 'package:gologapp/presentation/widgets/map_placeholder.dart';
-import 'package:gologapp/util/map_utils.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/presentation/controller/location_controller.dart';
+import 'package:golog/presentation/controller/route_controller.dart';
+import 'package:golog/presentation/screen/route_details/route_details_view.dart';
+import 'package:golog/presentation/widgets/map_placeholder.dart';
+import 'package:golog/util/map_utils.dart';
+import 'package:golog/util/styles.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart';
 
 /// Liga os controllers ao layout puro [RouteDetailsView] e monta o mapa.

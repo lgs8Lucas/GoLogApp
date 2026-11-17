@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart'
     show LatLng;
-import 'package:gologapp/data/datasource/local/coordinate_sql_service.dart';
-import 'package:gologapp/data/model/coordinate.dart';
-import 'package:gologapp/presentation/controller/route_controller.dart';
+import 'package:golog/data/datasource/local/coordinate_sql_service.dart';
+import 'package:golog/data/model/coordinate.dart';
+import 'package:golog/presentation/controller/route_controller.dart';
 
 class LocationController extends GetxController {
   final RouteController _routeController = Get.find<RouteController>();

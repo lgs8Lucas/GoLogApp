@@ -1,8 +1,8 @@
-import 'package:gologapp/data/model/coordinate.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/data/model/occurrence.dart';
-import 'package:gologapp/data/model/transport.dart';
-import 'package:gologapp/data/model/user.dart';
+import 'package:golog/data/model/coordinate.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/data/model/occurrence.dart';
+import 'package:golog/data/model/transport.dart';
+import 'package:golog/data/model/user.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:get/get.dart';

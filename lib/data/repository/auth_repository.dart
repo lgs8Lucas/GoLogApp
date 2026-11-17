@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:gologapp/data/datasource/local/user_sql_service.dart';
-import 'package:gologapp/data/datasource/remote/auth_api_service.dart';
-import 'package:gologapp/data/model/user.dart';
+import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/data/datasource/remote/auth_api_service.dart';
+import 'package:golog/data/model/user.dart';
 
 class AuthRepository {
   final AuthApi _authApi;

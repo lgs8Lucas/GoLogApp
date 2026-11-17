@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/presentation/widgets/app_button.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/presentation/widgets/app_button.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/styles.dart';
 
 /// Estado vazio/erro com ilustração, título, explicação e ação opcional.
 /// Usado como fallback sempre que uma lista ou dado não está disponível.

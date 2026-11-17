@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/data/datasource/local/user_sql_service.dart';
-import 'package:gologapp/data/model/user.dart';
-import 'package:gologapp/data/repository/auth_repository.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/data/model/user.dart';
+import 'package:golog/data/repository/auth_repository.dart';
+import 'package:golog/util/styles.dart';
 
 class LoginController extends GetxController {
   final emailController = TextEditingController();

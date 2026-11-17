@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/data/model/transport.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/data/model/transport.dart';
 import 'package:sqflite/sqflite.dart';
 import 'delivery_sql_service.dart';
 import 'sql_service.dart';

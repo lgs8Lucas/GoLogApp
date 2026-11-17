@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/presentation/widgets/app_button.dart';
-import 'package:gologapp/presentation/widgets/error_banner.dart';
-import 'package:gologapp/presentation/widgets/map_placeholder.dart';
-import 'package:gologapp/presentation/widgets/state_views.dart';
-import 'package:gologapp/presentation/widgets/status_badge.dart';
-import 'package:gologapp/preview/preview_data.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/format_utils.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/presentation/widgets/app_button.dart';
+import 'package:golog/presentation/widgets/error_banner.dart';
+import 'package:golog/presentation/widgets/map_placeholder.dart';
+import 'package:golog/presentation/widgets/state_views.dart';
+import 'package:golog/presentation/widgets/status_badge.dart';
+import 'package:golog/preview/preview_data.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/format_utils.dart';
+import 'package:golog/util/styles.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 /// Fase da navegação turn-by-turn exibida no painel.

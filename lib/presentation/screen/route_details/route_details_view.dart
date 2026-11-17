@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/data/model/transport.dart';
-import 'package:gologapp/presentation/screen/route_details/widget/route_item_details.dart';
-import 'package:gologapp/presentation/widgets/app_button.dart';
-import 'package:gologapp/presentation/widgets/error_banner.dart';
-import 'package:gologapp/presentation/widgets/map_placeholder.dart';
-import 'package:gologapp/presentation/widgets/page_shell.dart';
-import 'package:gologapp/presentation/widgets/state_views.dart';
-import 'package:gologapp/preview/preview_data.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/format_utils.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/data/model/transport.dart';
+import 'package:golog/presentation/screen/route_details/widget/route_item_details.dart';
+import 'package:golog/presentation/widgets/app_button.dart';
+import 'package:golog/presentation/widgets/error_banner.dart';
+import 'package:golog/presentation/widgets/map_placeholder.dart';
+import 'package:golog/presentation/widgets/page_shell.dart';
+import 'package:golog/presentation/widgets/state_views.dart';
+import 'package:golog/preview/preview_data.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/format_utils.dart';
+import 'package:golog/util/styles.dart';
 
 /// Layout puro da tela de detalhes da rota. O mapa chega pronto via [map]
 /// para que o preview possa usar um [MapPlaceholder] no lugar do Google Maps.

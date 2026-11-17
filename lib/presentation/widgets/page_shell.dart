@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/styles.dart';
 
 /// Esqueleto visual comum às telas internas: cabeçalho azul-escuro com
 /// título/subtítulo e ações, e o conteúdo num "cartão" claro com canto

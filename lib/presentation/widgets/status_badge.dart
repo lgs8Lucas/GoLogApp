@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/styles.dart';
 
 /// Aparência de um status de entrega. Centraliza o mapeamento
 /// status -> cor/ícone/rótulo, com fallback para "Pendente" quando o

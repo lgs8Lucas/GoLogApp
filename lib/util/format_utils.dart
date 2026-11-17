@@ -1,4 +1,4 @@
-import 'package:gologapp/util/date_extensions.dart';
+import 'package:golog/util/date_extensions.dart';
 
 /// Helpers de exibição com fallback: qualquer dado vazio vindo do backend
 /// ou do banco local vira um texto amigável em vez de string em branco,

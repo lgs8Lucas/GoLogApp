@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/util/styles.dart';
 
 /// Utilitários de mapa. Usa o `GoogleMapsMapView` do google_navigation_flutter
 /// (e não o google_maps_flutter): o Navigation SDK já embute o Maps SDK e os

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/presentation/controller/login_controller.dart';
-import 'package:gologapp/presentation/controller/route_controller.dart';
-import 'package:gologapp/presentation/screen/route/route_view.dart';
+import 'package:golog/presentation/controller/login_controller.dart';
+import 'package:golog/presentation/controller/route_controller.dart';
+import 'package:golog/presentation/screen/route/route_view.dart';
 
 /// Liga [RouteController]/[LoginController] ao layout puro [RouteListView].
 class RouteScreen extends StatelessWidget {

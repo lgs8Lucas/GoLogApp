@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/util/styles.dart';
 
 /// Tema Material 3 central do app. Concentrar aqui o visual de inputs,
 /// botões, snackbars etc. evita repetir `styleFrom` em cada tela.

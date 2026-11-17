@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:gologapp/data/datasource/remote/api_service.dart';
+import 'package:golog/data/datasource/remote/api_service.dart';
 
 class AuthApi {
   final ApiService _apiService;

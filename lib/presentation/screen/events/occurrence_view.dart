@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/data/model/action_type.dart';
-import 'package:gologapp/presentation/widgets/app_button.dart';
-import 'package:gologapp/presentation/widgets/page_shell.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/format_utils.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/data/model/action_type.dart';
+import 'package:golog/presentation/widgets/app_button.dart';
+import 'package:golog/presentation/widgets/page_shell.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/format_utils.dart';
+import 'package:golog/util/styles.dart';
 import 'package:signature/signature.dart';
 
 /// Textos e cores de cada tipo de ação da tela de ocorrência.
@@ -76,6 +77,135 @@ class OccurrenceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (action == ActionType.signature) {
+      // A tela de assinatura é exibida em paisagem (o OccurrenceScreen gira
+      // o aparelho). Se por algum motivo continuar em retrato (tablet com
+      // rotação travada, preview), cai no layout vertical.
+      return LayoutBuilder(
+        builder: (context, constraints) =>
+            constraints.maxWidth > constraints.maxHeight
+            ? _buildSignatureLandscape(context)
+            : _buildPortrait(context),
+      );
+    }
+    return _buildPortrait(context);
+  }
+
+  Widget _submitButton(_ActionCopy copy) {
+    final bool isSignature = action == ActionType.signature;
+    return ListenableBuilder(
+      listenable: isSignature ? signatureController : observationController,
+      builder: (context, _) {
+        final bool valid = switch (action) {
+          ActionType.signature => signatureController.isNotEmpty,
+          ActionType.observation =>
+            observationController.text.trim().isNotEmpty,
+          ActionType.finish => true,
+        };
+        return AppButton(
+          label: copy.button,
+          icon: copy.icon,
+          color: copy.color,
+          isLoading: isSaving,
+          onPressed: valid ? onSubmit : null,
+        );
+      },
+    );
+  }
+
+  /// Layout deitado: painel lateral estreito com título e ações, e o quadro
+  /// de assinatura ocupando quase toda a largura, com a linha na horizontal.
+  Widget _buildSignatureLandscape(BuildContext context) {
+    final copy = _ActionCopy.of(action);
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: Styles.COLOR_BLACKBLUE,
+        body: SafeArea(
+          child: Row(
+            children: [
+              SizedBox(
+                width: 236,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          HeaderIconButton(
+                            icon: Icons.arrow_back_rounded,
+                            tooltip: 'Voltar',
+                            onPressed: onBack,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Rota ${FormatUtils.routeCode(routeCode)}',
+                                  style: const TextStyle(
+                                    color: Styles.COLOR_WHITE,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if (stopLabel != null)
+                                  Text(
+                                    stopLabel!,
+                                    style: TextStyle(
+                                      color: Styles.COLOR_WHITE.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Styles.SPACE_M),
+                      Text(
+                        copy.title,
+                        style: const TextStyle(
+                          color: Styles.COLOR_WHITE,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Expanded(
+                        child: Text(
+                          'Peça para o responsável assinar sobre a linha.',
+                          overflow: TextOverflow.fade,
+                          style: TextStyle(
+                            color: Styles.COLOR_WHITE.withValues(alpha: 0.7),
+                            fontSize: 13,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                      _submitButton(copy),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 12, 12),
+                  child: _SignaturePad(controller: signatureController),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPortrait(BuildContext context) {
     final copy = _ActionCopy.of(action);
     final bool isSignature = action == ActionType.signature;
 
@@ -83,26 +213,7 @@ class OccurrenceView extends StatelessWidget {
       title: 'Rota ${FormatUtils.routeCode(routeCode)}',
       subtitle: stopLabel,
       onBack: onBack,
-      bottomBar: BottomActionBar(
-        child: ListenableBuilder(
-          listenable: isSignature ? signatureController : observationController,
-          builder: (context, _) {
-            final bool valid = switch (action) {
-              ActionType.signature => signatureController.isNotEmpty,
-              ActionType.observation =>
-                observationController.text.trim().isNotEmpty,
-              ActionType.finish => true,
-            };
-            return AppButton(
-              label: copy.button,
-              icon: copy.icon,
-              color: copy.color,
-              isLoading: isSaving,
-              onPressed: valid ? onSubmit : null,
-            );
-          },
-        ),
-      ),
+      bottomBar: BottomActionBar(child: _submitButton(copy)),
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Column(
@@ -314,6 +425,24 @@ Widget occurrenceFinishPreview() {
     signatureController: SignatureController(),
     observationController: TextEditingController(),
     isSaving: true,
+    onBack: () {},
+    onSubmit: () {},
+  );
+}
+
+@Preview(
+  group: 'Telas',
+  name: 'Ocorrência - assinatura (paisagem)',
+  size: Size(844, 390),
+  wrapper: goLogPreviewWrapper,
+)
+Widget occurrenceSignatureLandscapePreview() {
+  return OccurrenceView(
+    action: ActionType.signature,
+    routeCode: 1,
+    stopLabel: 'Entrega #002',
+    signatureController: SignatureController(penStrokeWidth: 3),
+    observationController: TextEditingController(),
     onBack: () {},
     onSubmit: () {},
   );

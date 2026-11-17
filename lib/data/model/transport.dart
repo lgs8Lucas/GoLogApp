@@ -1,4 +1,4 @@
-import 'package:gologapp/data/model/delivery.dart';
+import 'package:golog/data/model/delivery.dart';
 
 class Transport {
   static final String tableName = 'transport';

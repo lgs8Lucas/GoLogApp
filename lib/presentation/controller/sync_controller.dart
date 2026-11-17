@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/data/datasource/remote/api_service.dart';
+import 'package:golog/data/datasource/remote/api_service.dart';
 
 class SyncController extends GetxController with WidgetsBindingObserver {
   final ApiService _apiService = Get.find<ApiService>();

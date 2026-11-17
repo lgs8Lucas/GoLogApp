@@ -6,14 +6,14 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart';
-import 'package:gologapp/presentation/controller/location_controller.dart';
-import 'package:gologapp/presentation/controller/occurrence_controller.dart';
-import 'package:gologapp/presentation/controller/route_controller.dart';
-import 'package:gologapp/presentation/screen/delivery_route/delivery_route_view.dart';
-import 'package:gologapp/presentation/screen/events/occurrence_screen.dart';
-import 'package:gologapp/presentation/widgets/map_placeholder.dart';
-import 'package:gologapp/util/format_utils.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/presentation/controller/location_controller.dart';
+import 'package:golog/presentation/controller/occurrence_controller.dart';
+import 'package:golog/presentation/controller/route_controller.dart';
+import 'package:golog/presentation/screen/delivery_route/delivery_route_view.dart';
+import 'package:golog/presentation/screen/events/occurrence_screen.dart';
+import 'package:golog/presentation/widgets/map_placeholder.dart';
+import 'package:golog/util/format_utils.dart';
+import 'package:golog/util/styles.dart';
 
 /// Tela de navegação turn-by-turn até a parada selecionada, usando o
 /// Google Navigation SDK (google_navigation_flutter).
@@ -390,7 +390,7 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
 
   void _openOccurrence(ActionType action) {
     occurrenceController.startNewOccurrence(action);
-    Get.to(() => OccurrenceScreen())?.then((_) => _refreshOutcomeStatus());
+    Get.to(() => const OccurrenceScreen())?.then((_) => _refreshOutcomeStatus());
   }
 
   // ---------------------------------------------------------------------

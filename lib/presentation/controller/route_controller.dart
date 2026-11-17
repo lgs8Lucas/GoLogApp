@@ -1,13 +1,13 @@
 import 'package:get/get.dart';
-import 'package:gologapp/data/datasource/local/delivery_sql_service.dart';
-import 'package:gologapp/data/datasource/local/ocurrence_sql_service.dart';
-import 'package:gologapp/data/datasource/local/sql_service.dart';
-import 'package:gologapp/data/datasource/local/user_sql_service.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/data/model/occurrence.dart';
-import 'package:gologapp/data/model/user.dart';
-import 'package:gologapp/data/model/transport.dart';
-import 'package:gologapp/data/repository/route_repository.dart';
+import 'package:golog/data/datasource/local/delivery_sql_service.dart';
+import 'package:golog/data/datasource/local/ocurrence_sql_service.dart';
+import 'package:golog/data/datasource/local/sql_service.dart';
+import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/data/model/occurrence.dart';
+import 'package:golog/data/model/user.dart';
+import 'package:golog/data/model/transport.dart';
+import 'package:golog/data/repository/route_repository.dart';
 
 class RouteController extends GetxController {
   final RouteRepository _routeRepository = Get.find<RouteRepository>();

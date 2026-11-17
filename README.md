@@ -1,4 +1,4 @@
-# gologapp
+# GoLog
 
 A new Flutter project.
 

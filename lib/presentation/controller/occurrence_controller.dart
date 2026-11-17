@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/data/datasource/local/delivery_sql_service.dart';
-import 'package:gologapp/data/datasource/local/ocurrence_sql_service.dart';
-import 'package:gologapp/data/datasource/local/user_sql_service.dart';
-import 'package:gologapp/data/model/action_type.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/data/model/occurrence.dart';
-import 'package:gologapp/data/model/user.dart';
-import 'package:gologapp/presentation/controller/route_controller.dart';
+import 'package:golog/data/datasource/local/delivery_sql_service.dart';
+import 'package:golog/data/datasource/local/ocurrence_sql_service.dart';
+import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/data/model/action_type.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/data/model/occurrence.dart';
+import 'package:golog/data/model/user.dart';
+import 'package:golog/presentation/controller/route_controller.dart';
 import 'package:signature/signature.dart';
 
-export 'package:gologapp/data/model/action_type.dart';
+export 'package:golog/data/model/action_type.dart';
 
 class OccurrenceController extends GetxController {
   final RouteController _routeController = Get.find<RouteController>();

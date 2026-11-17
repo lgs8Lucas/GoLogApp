@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:gologapp/data/model/delivery.dart'; // Ajuste o caminho conforme seu projeto
+import 'package:golog/data/model/delivery.dart'; // Ajuste o caminho conforme seu projeto
 import 'package:sqflite/sqflite.dart';
 import 'sql_service.dart';
 

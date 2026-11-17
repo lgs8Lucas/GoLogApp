@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/data/model/transport.dart';
-import 'package:gologapp/presentation/screen/route/widgets/route_item.dart';
-import 'package:gologapp/presentation/widgets/error_banner.dart';
-import 'package:gologapp/presentation/widgets/page_shell.dart';
-import 'package:gologapp/presentation/widgets/state_views.dart';
-import 'package:gologapp/preview/preview_data.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/data/model/transport.dart';
+import 'package:golog/presentation/screen/route/widgets/route_item.dart';
+import 'package:golog/presentation/widgets/error_banner.dart';
+import 'package:golog/presentation/widgets/page_shell.dart';
+import 'package:golog/presentation/widgets/state_views.dart';
+import 'package:golog/preview/preview_data.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/styles.dart';
 
 /// Layout puro da listagem de rotas.
 class RouteListView extends StatelessWidget {

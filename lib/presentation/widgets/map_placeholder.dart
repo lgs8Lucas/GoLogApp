@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/styles.dart';
 
 /// Ilustração de mapa desenhada em código (ruas, quadras, rota e pinos).
 /// Serve de imagem decorativa e de fallback quando o mapa real não pode ser

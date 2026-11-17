@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/presentation/widgets/app_button.dart';
-import 'package:gologapp/presentation/widgets/golog_logo.dart';
-import 'package:gologapp/presentation/widgets/map_placeholder.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/presentation/widgets/app_button.dart';
+import 'package:golog/presentation/widgets/golog_logo.dart';
+import 'package:golog/presentation/widgets/map_placeholder.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/styles.dart';
 
 /// Layout puro da tela de login (sem GetX): recebe estado e callbacks, o
 /// que permite renderizá-lo no Widget Previewer com dados fictícios.

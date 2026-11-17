@@ -1,30 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:gologapp/data/datasource/local/coordinate_sql_service.dart';
-import 'package:gologapp/data/datasource/local/delivery_sql_service.dart';
-import 'package:gologapp/data/datasource/local/transport_sql_service.dart';
-import 'package:gologapp/data/datasource/local/ocurrence_sql_service.dart';
-import 'package:gologapp/data/datasource/local/user_sql_service.dart';
-import 'package:gologapp/data/datasource/remote/api_service.dart';
-import 'package:gologapp/data/datasource/remote/auth_api_service.dart';
-import 'package:gologapp/data/repository/auth_repository.dart';
-import 'package:gologapp/data/repository/route_repository.dart';
-import 'package:gologapp/presentation/controller/location_controller.dart';
-import 'package:gologapp/presentation/controller/login_controller.dart';
-import 'package:gologapp/presentation/controller/occurrence_controller.dart';
-import 'package:gologapp/presentation/controller/sync_controller.dart';
-import 'package:gologapp/presentation/controller/route_controller.dart';
-import 'package:gologapp/presentation/screen/login/login_screen.dart';
-import 'package:gologapp/presentation/screen/route/route_screen.dart';
-import 'package:gologapp/presentation/screen/delivery_route/delivery_route_screen.dart';
-import 'package:gologapp/presentation/screen/route_details/route_details_screen.dart';
-import 'package:gologapp/presentation/screen/splash/splash_view.dart';
-import 'package:gologapp/util/app_theme.dart';
-import 'package:gologapp/data/datasource/local/sql_service.dart';
+import 'package:golog/data/datasource/local/coordinate_sql_service.dart';
+import 'package:golog/data/datasource/local/delivery_sql_service.dart';
+import 'package:golog/data/datasource/local/transport_sql_service.dart';
+import 'package:golog/data/datasource/local/ocurrence_sql_service.dart';
+import 'package:golog/data/datasource/local/user_sql_service.dart';
+import 'package:golog/data/datasource/remote/api_service.dart';
+import 'package:golog/data/datasource/remote/auth_api_service.dart';
+import 'package:golog/data/repository/auth_repository.dart';
+import 'package:golog/data/repository/route_repository.dart';
+import 'package:golog/presentation/controller/location_controller.dart';
+import 'package:golog/presentation/controller/login_controller.dart';
+import 'package:golog/presentation/controller/occurrence_controller.dart';
+import 'package:golog/presentation/controller/sync_controller.dart';
+import 'package:golog/presentation/controller/route_controller.dart';
+import 'package:golog/presentation/screen/login/login_screen.dart';
+import 'package:golog/presentation/screen/route/route_screen.dart';
+import 'package:golog/presentation/screen/delivery_route/delivery_route_screen.dart';
+import 'package:golog/presentation/screen/route_details/route_details_screen.dart';
+import 'package:golog/presentation/screen/splash/splash_view.dart';
+import 'package:golog/util/app_theme.dart';
+import 'package:golog/data/datasource/local/sql_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // App em retrato; só a tela de assinatura gira para paisagem
+  // (ver OccurrenceScreen).
+  await SystemChrome.setPreferredOrientations(const [
+    DeviceOrientation.portraitUp,
+  ]);
 
   await GetStorage.init();
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gologapp/presentation/controller/login_controller.dart';
-import 'package:gologapp/presentation/screen/login/login_view.dart';
+import 'package:golog/presentation/controller/login_controller.dart';
+import 'package:golog/presentation/screen/login/login_view.dart';
 
 /// Liga o [LoginController] ao layout puro [LoginView].
 class LoginScreen extends StatelessWidget {

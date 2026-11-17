@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:gologapp/data/model/user.dart';
+import 'package:golog/data/model/user.dart';
 import 'package:sqflite/sqflite.dart';
 import 'sql_service.dart';
 

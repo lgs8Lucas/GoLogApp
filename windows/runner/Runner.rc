@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "gologapp" "\0"
+            VALUE "FileDescription", "GoLog" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "gologapp" "\0"
+            VALUE "InternalName", "golog" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "gologapp.exe" "\0"
-            VALUE "ProductName", "gologapp" "\0"
+            VALUE "OriginalFilename", "golog.exe" "\0"
+            VALUE "ProductName", "GoLog" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

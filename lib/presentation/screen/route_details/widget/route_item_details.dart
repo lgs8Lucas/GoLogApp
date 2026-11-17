@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/presentation/widgets/status_badge.dart';
-import 'package:gologapp/preview/preview_data.dart';
-import 'package:gologapp/preview/preview_wrapper.dart';
-import 'package:gologapp/util/format_utils.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/presentation/widgets/status_badge.dart';
+import 'package:golog/preview/preview_data.dart';
+import 'package:golog/preview/preview_wrapper.dart';
+import 'package:golog/util/format_utils.dart';
+import 'package:golog/util/styles.dart';
 
 /// Item de parada no formato de linha do tempo: número da sequência,
 /// conector vertical e card com tipo, status, previsão, endereço e

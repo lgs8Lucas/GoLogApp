@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gologapp/util/app_theme.dart';
-import 'package:gologapp/util/styles.dart';
+import 'package:golog/util/app_theme.dart';
+import 'package:golog/util/styles.dart';
 
 /// Wrapper usado em todos os `@Preview` do app: aplica o tema do GoLog e um
 /// fundo neutro, para que o widget apareça igual ao app real no

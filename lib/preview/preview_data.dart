@@ -1,5 +1,5 @@
-import 'package:gologapp/data/model/delivery.dart';
-import 'package:gologapp/data/model/transport.dart';
+import 'package:golog/data/model/delivery.dart';
+import 'package:golog/data/model/transport.dart';
 
 /// Dados fictícios usados apenas pelos `@Preview`. Nada aqui é lido em
 /// tempo de execução no app real.

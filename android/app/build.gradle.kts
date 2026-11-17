@@ -22,7 +22,7 @@ val dartDefines: Map<String, String> =
         ?: emptyMap()
 
 android {
-    namespace = "com.example.gologapp"
+    namespace = "br.com.golog.app"
     // google_navigation_flutter (Navigation SDK 8.x) exige compileSdk 36.
     compileSdk = maxOf(flutter.compileSdkVersion, 36)
     ndkVersion = flutter.ndkVersion
@@ -42,7 +42,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.gologapp"
+        applicationId = "br.com.golog.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Navigation SDK exige minSdk 24.

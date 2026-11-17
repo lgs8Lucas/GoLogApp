@@ -1,11 +1,11 @@
 {
-    "name": "gologapp",
-    "short_name": "gologapp",
+    "name": "GoLog",
+    "short_name": "GoLog",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#1B2A47",
+    "theme_color": "#1B2A47",
+    "description": "GoLog - gestão de rotas e entregas.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
