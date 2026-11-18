@@ -20,13 +20,14 @@ enum SyncResult {
 }
 
 /// Envia ao servidor o que foi registrado offline (ocorrências e
-/// telemetria) e limpa do aparelho o que já foi enviado há algum tempo.
+/// telemetria) e limpa do aparelho o trajeto já enviado há algum tempo.
+/// (A limpeza de ocorrências fica no RouteRepository, que conhece a lista
+/// atual do servidor.)
 class SyncRepository {
   /// Máximo de coordenadas enviadas por ciclo, para um ciclo não ficar
   /// rodando indefinidamente depois de muito tempo offline.
   static const int _maxCoordinatesPerCycle = 500;
   static const Duration _keepSyncedCoordinates = Duration(days: 2);
-  static const Duration _keepSyncedOccurrences = Duration(days: 7);
 
   final ApiService _api;
   final CredentialStore _credentials;
@@ -82,7 +83,6 @@ class SyncRepository {
       await _syncOccurrences();
       await _syncCoordinates();
       await _coordinates.purgeSynced(_keepSyncedCoordinates);
-      await _occurrences.purgeSynced(_keepSyncedOccurrences);
       return SyncResult.done;
     } catch (e) {
       appLog('Erro durante a sincronização: $e');

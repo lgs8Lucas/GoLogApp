@@ -72,7 +72,7 @@ class Delivery {
       scheduledDate: JsonParse.toDate(json['shedulind']),
       routePlanned: JsonParse.toStr(routeStop?['routePlanned']),
       routeCompleted: JsonParse.toStr(json['routeCompleted']),
-      status: JsonParse.toStr(json['status']),
+      status: DeliveryStatus.fromApi(json['status']),
       deliverySequence: JsonParse.toInt(routeStop?['sequenceOrder']),
       deliveryTypeId: JsonParse.toStr(
         JsonParse.toMap(json['shipmentType'])?['id'],
@@ -116,7 +116,9 @@ class Delivery {
       scheduledDate: JsonParse.toDate(db[columnScheduledDate]),
       routePlanned: db[columnRoutePlanned] ?? '',
       routeCompleted: db[columnRouteCompleted] ?? '',
-      status: db[columnStatus] ?? '',
+      // Normaliza também o cache: versões anteriores gravavam o valor cru
+      // da API (ex: "FINALIZADO").
+      status: DeliveryStatus.fromApi(db[columnStatus]),
       deliverySequence: JsonParse.toInt(db[columnDeliverySequence]),
       deliveryTypeId: db[columnDeliveryTypeId] ?? '',
       transportId: db[columnTransportId] ?? '',
@@ -132,10 +134,12 @@ class Delivery {
     if (json == null) return '';
     final street = JsonParse.toStr(json['street']);
     final number = JsonParse.toStr(json['number']);
+    final district = JsonParse.toStr(json['district']);
     final city = JsonParse.toStr(json['city']);
     final state = JsonParse.toStr(json['state']);
-    final zipCode = JsonParse.toStr(json['zipCode']);
-    return '$street, $number, $city, $state, $zipCode';
+    // A API manda `cep`; `zipCode` fica como alternativa.
+    final zipCode = JsonParse.toStr(json['cep'] ?? json['zipCode']);
+    return '$street, $number, $district, $city, $state, $zipCode';
   }
 
   /// Nova lista ordenada pela sequência da parada (não altera a original).

@@ -1,4 +1,3 @@
-import 'package:golog/data/model/delivery.dart';
 import 'package:golog/data/model/occurrence.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -41,19 +40,37 @@ class OccurrenceSqlService {
     );
   }
 
-  /// Remove ocorrências já enviadas há mais de [olderThan] cuja entrega não
-  /// está mais na lista atual (as da lista ainda são usadas para calcular
-  /// o status local em `RouteRepository`).
-  Future<int> purgeSynced(Duration olderThan) {
+  /// Remove ocorrências já enviadas há mais de [olderThan], exceto as das
+  /// entregas em [keepDeliveryIds]. Quem chama decide o que manter com base
+  /// na lista que acabou de vir do servidor (ver RouteRepository).
+  Future<int> purgeSynced(
+    Duration olderThan, {
+    required Set<String> keepDeliveryIds,
+  }) async {
     final cutoff = DateTime.now().subtract(olderThan).toIso8601String();
-    return _db.delete(
+    final rows = await _db.query(
       Occurrence.tableName,
+      columns: [Occurrence.columnLocalId, Occurrence.columnDeliveryId],
       where:
-          '${Occurrence.columnIsSynced} = 1 '
-          'AND ${Occurrence.columnDateTime} < ? '
-          'AND ${Occurrence.columnDeliveryId} NOT IN '
-          '(SELECT ${Delivery.columnId} FROM ${Delivery.tableName})',
+          '${Occurrence.columnIsSynced} = 1 AND ${Occurrence.columnDateTime} < ?',
       whereArgs: [cutoff],
     );
+    final ids = [
+      for (final r in rows)
+        if (!keepDeliveryIds.contains(r[Occurrence.columnDeliveryId]))
+          r[Occurrence.columnLocalId] as int,
+    ];
+    var deleted = 0;
+    const chunk = 500;
+    for (var i = 0; i < ids.length; i += chunk) {
+      final part = ids.sublist(i, (i + chunk).clamp(0, ids.length));
+      deleted += await _db.delete(
+        Occurrence.tableName,
+        where:
+            '${Occurrence.columnLocalId} IN (${List.filled(part.length, '?').join(',')})',
+        whereArgs: part,
+      );
+    }
+    return deleted;
   }
 }

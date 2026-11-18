@@ -145,4 +145,45 @@ void main() {
     expect(await r.sync(), SyncResult.skipped);
     expect(requests, 0);
   });
+
+  group('limpeza de ocorrências enviadas', () {
+    Future<int> insert(
+      String deliveryId, {
+      required bool synced,
+      int daysAgo = 10,
+    }) => occurrences.insertOccurrence(
+      Occurrence(
+        type: OccurrenceType.Fim.name,
+        description: '',
+        attachment: '',
+        deliveryId: deliveryId,
+        transportId: 't1',
+        senderId: 'u1',
+        isSynced: synced,
+        dateTime: DateTime.now().subtract(Duration(days: daysAgo)),
+      ),
+    );
+
+    test('mantém as de entregas ainda não finalizadas no servidor', () async {
+      await insert('aberta', synced: true);
+      await insert('fechada', synced: true);
+      final deleted = await occurrences.purgeSynced(
+        const Duration(days: 7),
+        keepDeliveryIds: {'aberta'},
+      );
+      expect(deleted, 1);
+      final left = await occurrences.get(null, null);
+      expect(left.single.deliveryId, 'aberta');
+    });
+
+    test('nunca apaga pendentes nem recentes', () async {
+      await insert('d1', synced: false);
+      await insert('d2', synced: true, daysAgo: 1);
+      final deleted = await occurrences.purgeSynced(
+        const Duration(days: 7),
+        keepDeliveryIds: {},
+      );
+      expect(deleted, 0);
+    });
+  });
 }

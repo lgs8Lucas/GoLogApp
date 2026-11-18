@@ -11,6 +11,10 @@ import 'package:golog/util/json_parse.dart';
 import 'package:golog/util/log.dart';
 
 class RouteRepository {
+  /// Ocorrências já enviadas ficam no aparelho por este tempo (e enquanto
+  /// o servidor ainda não mostrar a entrega como finalizada).
+  static const Duration _keepSyncedOccurrences = Duration(days: 7);
+
   final ApiService _apiService;
   final TransportSqlService _transportSqlService;
   final DeliverySqlService _deliverySqlService;
@@ -28,11 +32,15 @@ class RouteRepository {
   );
 
   /// Busca as rotas do motorista no servidor, aplica o que já foi
-  /// registrado offline e salva no cache. Se o servidor falhar, devolve o
-  /// cache local.
+  /// registrado no aparelho e salva no cache. Se o servidor falhar, devolve
+  /// o cache local.
+  ///
+  /// O status vem da API; uma ocorrência local mais recente que o servidor
+  /// ainda não refletiu (ex: entrega finalizada offline) prevalece.
   Future<List<Transport>> getTransports() async {
     try {
       final transports = await fetchTransports();
+      await _purgeOldOccurrences(transports);
       await mergeLocalData(transports);
       await saveTransports(transports);
     } catch (e) {
@@ -83,6 +91,26 @@ class RouteRepository {
       }
     }
     return transportById.values.toList();
+  }
+
+  /// Apaga ocorrências antigas já enviadas que não fazem mais diferença:
+  /// mantém as de entregas que o servidor ainda não mostra como
+  /// finalizadas, pois são elas que corrigem o status no merge. Roda só
+  /// com a lista recém-baixada (nunca com o cache vazio após logout).
+  Future<void> _purgeOldOccurrences(List<Transport> fromServer) async {
+    final keep = {
+      for (final t in fromServer)
+        for (final d in t.deliveries)
+          if (!d.isFinished) d.id,
+    };
+    try {
+      await _occurrenceSqlService.purgeSynced(
+        _keepSyncedOccurrences,
+        keepDeliveryIds: keep,
+      );
+    } catch (e) {
+      appLog('Erro ao limpar ocorrências antigas: $e');
+    }
   }
 
   Future<void> saveTransports(List<Transport> transports) async {
