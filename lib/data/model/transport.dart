@@ -53,20 +53,20 @@ class Transport {
     var equipmentGroup = json['equipamentGroup'];
     var truck = equipmentGroup?["equipament1"];
     return Transport(
-      id: json['id'] ?? '',
-      codeTransport: json['codeTransport'] ?? 0,
-      routePlanned: json['routePlanned'] ?? '',
-      routeCompleted: json['routeCompleted'] ?? '',
-      deliveryQuantity: json[columnDeliveryQuantity] ?? 0,
-      timeStopped: json['timeStopped'] ?? 0,
-      totalTime: json['totalTime'] ?? 0,
-      driverId: json['driver'] != null ? json['driver']['id'] ?? '' : '',
+      id: json['id']?.toString() ?? '',
+      codeTransport: (json['codeTransport'] as num?)?.toInt() ?? 0,
+      routePlanned: json['routePlanned']?.toString() ?? '',
+      routeCompleted: json['routeCompleted']?.toString() ?? '',
+      deliveryQuantity: (json[columnDeliveryQuantity] as num?)?.toInt() ?? (json['deliveryQuantity'] as num?)?.toInt() ?? 0,
+      timeStopped: (json['timeStopped'] as num?)?.toDouble() ?? 0.0,
+      totalTime: (json['totalTime'] as num?)?.toDouble() ?? 0.0,
+      driverId: json['driver'] != null ? json['driver']['id']?.toString() ?? '' : '',
       transporterId: json['transporter'] != null
-          ? json['transporter']['id'] ?? ''
+          ? json['transporter']['id']?.toString() ?? ''
           : '',
-      equipamentGroupId: equipmentGroup?['id'] ?? '',
-      equipmentId: truck?['id'] ?? '',
-      plate: truck?["plate"] ?? '',
+      equipamentGroupId: equipmentGroup?['id']?.toString() ?? '',
+      equipmentId: truck?['id']?.toString() ?? '',
+      plate: truck?["plate"]?.toString() ?? '',
     );
   }
 
@@ -101,18 +101,18 @@ class Transport {
 
   factory Transport.fromDb(Map<String, dynamic> db) {
     return Transport(
-      id: db[columnId],
-      codeTransport: db[columnCodeTransport],
-      routePlanned: db[columnRoutePlanned],
-      routeCompleted: db[columnRouteCompleted],
-      deliveryQuantity: db[columnDeliveryQuantity],
-      timeStopped: db[columnTimeStopped],
-      totalTime: db[columnTotalTime],
-      driverId: db[columnDriverId] ?? '',
-      transporterId: db[columnTransporterId] ?? '',
-      equipamentGroupId: db[columnEquipamentGroupId] ?? '',
-      equipmentId: db[columnEquipmentId] ?? '',
-      plate: db[columnPlate] ?? '',
+      id: db[columnId]?.toString() ?? '',
+      codeTransport: (db[columnCodeTransport] as num?)?.toInt() ?? 0,
+      routePlanned: db[columnRoutePlanned]?.toString() ?? '',
+      routeCompleted: db[columnRouteCompleted]?.toString() ?? '',
+      deliveryQuantity: (db[columnDeliveryQuantity] as num?)?.toInt() ?? 0,
+      timeStopped: (db[columnTimeStopped] as num?)?.toDouble() ?? 0.0,
+      totalTime: (db[columnTotalTime] as num?)?.toDouble() ?? 0.0,
+      driverId: db[columnDriverId]?.toString() ?? '',
+      transporterId: db[columnTransporterId]?.toString() ?? '',
+      equipamentGroupId: db[columnEquipamentGroupId]?.toString() ?? '',
+      equipmentId: db[columnEquipmentId]?.toString() ?? '',
+      plate: db[columnPlate]?.toString() ?? '',
     );
   }
 }

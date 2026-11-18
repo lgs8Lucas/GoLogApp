@@ -54,29 +54,34 @@ class Delivery {
   });
 
   factory Delivery.fromJson(Map<String, dynamic> json) {
+    var rawAddress = json['address'] ?? json['customer']?['address'];
     return Delivery(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       weight: (json['weight'] as num?)?.toDouble() ?? 0.0,
       volume: (json['volume'] as num?)?.toDouble() ?? 0.0,
-      shedulind: DateTime.parse(json['shedulind']),
-      routePlanned: json['routeStop']?['routePlanned'] ?? '',
-      routeCompleted: json['routeCompleted'] ?? '',
-      status: json['status'] ?? '',
-      deliverySequence: (json['routeStop']?['sequenceOrder'] as num?)?.toInt() ?? 0,
+      shedulind: DateTime.tryParse(json['shedulind']?.toString() ?? json['schedulind']?.toString() ?? '') ?? DateTime.now(),
+      routePlanned: json['routeStop']?['routePlanned']?.toString() ?? json['routePlanned']?.toString() ?? '',
+      routeCompleted: json['routeCompleted']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      deliverySequence: (json['routeStop']?['sequenceOrder'] as num?)?.toInt() ?? (json['deliverySequence'] as num?)?.toInt() ?? 0,
       deliveryTypeId: json['shipmentType'] != null
-          ? json['shipmentType']['id'] ?? ''
+          ? json['shipmentType']['id']?.toString() ?? ''
           : '',
       transportId: json['transport'] != null
-          ? json['transport']['id'] ?? ''
-          : '',
-      destinationAddress: json['address'] != null
-          ? _getAddressFromJson(json['address'])
-          : '',
-      recipientName: json['customer']?['legalName'] ?? '',
+          ? json['transport']['id']?.toString() ?? ''
+          : (json['transportId']?.toString() ?? ''),
+      destinationAddress: _getAddressFromJson(rawAddress),
+      recipientName: json['customer']?['legalName']?.toString() ?? '',
       isPickup: json["typeOperation"] == "COLETA",
-      destinationLat: double.tryParse(json['address']?['latitude']??'0') ?? 0.0,
-      destinationLng: double.tryParse(json['address']?['longitude']??'0') ?? 0.0,
+      destinationLat: _parseCoord(rawAddress?['latitude']),
+      destinationLng: _parseCoord(rawAddress?['longitude']),
     );
+  }
+
+  static double _parseCoord(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0.0;
   }
 
   Map<String, dynamic> toJson() {
@@ -116,20 +121,20 @@ class Delivery {
 
   factory Delivery.fromDb(Map<String, dynamic> db) {
     return Delivery(
-      id: db[columnId],
-      weight: db[columnWeight],
-      volume: db[columnVolume],
-      shedulind: DateTime.parse(db[columnScheduledCollection]),
-      routePlanned: db[columnRoutePlanned],
-      routeCompleted: db[columnRouteCompleted],
-      status: db[columnStatus],
-      deliverySequence: db[columnDeliverySequence],
-      deliveryTypeId: db[columnDeliveryTypeId] ?? '',
-      transportId: db[columnTransportId] ?? '',
-      destinationAddress: db[columnDestinationAddress] ?? '',
+      id: db[columnId]?.toString() ?? '',
+      weight: (db[columnWeight] as num?)?.toDouble() ?? 0.0,
+      volume: (db[columnVolume] as num?)?.toDouble() ?? 0.0,
+      shedulind: DateTime.tryParse(db[columnScheduledCollection]?.toString() ?? '') ?? DateTime.now(),
+      routePlanned: db[columnRoutePlanned]?.toString() ?? '',
+      routeCompleted: db[columnRouteCompleted]?.toString() ?? '',
+      status: db[columnStatus]?.toString() ?? '',
+      deliverySequence: (db[columnDeliverySequence] as num?)?.toInt() ?? 0,
+      deliveryTypeId: db[columnDeliveryTypeId]?.toString() ?? '',
+      transportId: db[columnTransportId]?.toString() ?? '',
+      destinationAddress: db[columnDestinationAddress]?.toString() ?? '',
       destinationLat: (db[columnDestinationLat] as num?)?.toDouble() ?? 0.0,
       destinationLng: (db[columnDestinationLng] as num?)?.toDouble() ?? 0.0,
-      recipientName: db[columnRecipientName] ?? '',
+      recipientName: db[columnRecipientName]?.toString() ?? '',
       isPickup: db[columnIsPickup] == 1,
     );
   }
