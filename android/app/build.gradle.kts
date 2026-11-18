@@ -1,4 +1,6 @@
+import java.io.FileInputStream
 import java.util.Base64
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -20,6 +22,20 @@ val dartDefines: Map<String, String> =
             decoded.substring(0, separatorIndex) to decoded.substring(separatorIndex + 1)
         }
         ?: emptyMap()
+
+// Assinatura de release: lida de android/key.properties (fora do git).
+// Formato:
+//   storeFile=/caminho/para/golog-release.jks
+//   storePassword=...
+//   keyAlias=golog
+//   keyPassword=...
+// Sem o arquivo, o release cai na chave de debug (só serve para testes,
+// não pode ser publicado).
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) FileInputStream(file).use { load(it) }
+}
+val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null
 
 android {
     namespace = "br.com.golog.app"
@@ -55,11 +71,25 @@ android {
             dartDefines["GOOGLE_MAPS_API_KEY"] ?: ""
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                logger.warn("android/key.properties ausente: release assinado com a chave de DEBUG.")
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

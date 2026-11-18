@@ -512,7 +512,7 @@ DeliveryRouteView _preview(
   String locationError = '',
 }) {
   return DeliveryRouteView(
-    delivery: PreviewData.delivery(sequence: 2, status: 'Iniciado'),
+    delivery: PreviewData.delivery(sequence: 2, status: DeliveryStatus.started),
     routeCode: 1,
     map: map,
     navigation: navigation,

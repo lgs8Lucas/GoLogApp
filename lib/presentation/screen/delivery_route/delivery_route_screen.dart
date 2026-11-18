@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart';
+import 'package:golog/data/model/delivery.dart';
 import 'package:golog/presentation/controller/location_controller.dart';
 import 'package:golog/presentation/controller/occurrence_controller.dart';
 import 'package:golog/presentation/controller/route_controller.dart';
@@ -57,15 +58,23 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
     return LatLng(latitude: d!.destinationLat, longitude: d.destinationLng);
   }
 
+  // Parada desta tela, guardada no início: selectedDelivery pode mudar
+  // até o dispose.
+  late final Delivery? _delivery;
+
   @override
   void initState() {
     super.initState();
+    _delivery = controller.selectedDelivery;
     _refreshOutcomeStatus();
     _startNavigation();
   }
 
   @override
   void dispose() {
+    // Saiu da parada: os próximos pontos de telemetria não pertencem mais
+    // a este shipment.
+    controller.leaveDelivery(_delivery);
     _arrivalSub?.cancel();
     _remainingSub?.cancel();
     _reroutingSub?.cancel();
@@ -390,7 +399,9 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
 
   void _openOccurrence(ActionType action) {
     occurrenceController.startNewOccurrence(action);
-    Get.to(() => const OccurrenceScreen())?.then((_) => _refreshOutcomeStatus());
+    Get.to(
+      () => const OccurrenceScreen(),
+    )?.then((_) => _refreshOutcomeStatus());
   }
 
   // ---------------------------------------------------------------------
@@ -447,7 +458,7 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
           map: _buildMap(),
           onBack: () {
             if (_canLeave) {
-              Get.offAllNamed('/route_details');
+              Get.back();
             } else {
               _showOutcomeRequiredWarning();
             }

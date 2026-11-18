@@ -1,54 +1,26 @@
-import 'package:get/get.dart';
 import 'package:golog/data/model/user.dart';
 import 'package:sqflite/sqflite.dart';
-import 'sql_service.dart';
 
-class UserSqlService extends GetxService {
-  final Database _db = Get.find<SqlService>().db;
+class UserSqlService {
+  final Database _db;
 
-  Future<int> insertUser(Map<String, dynamic> row, {Transaction? txn}) async {
-    if (txn != null) return await txn.insert(User.tableName, row);
-    return await _db.insert(User.tableName, row);
+  UserSqlService(this._db);
+
+  /// Usuário logado (o app guarda no máximo um).
+  Future<User?> getCurrentUser() async {
+    final rows = await _db.query(User.tableName, limit: 1);
+    return rows.isEmpty ? null : User.fromDb(rows.first);
   }
 
-  Future<List<Map<String, dynamic>>> getAllUsers() async {
-    return await _db.query(User.tableName);
+  Future<String> getCurrentUserId() async => (await getCurrentUser())?.id ?? '';
+
+  /// Substitui o usuário salvo pelo [user].
+  Future<void> replaceUser(User user) async {
+    await _db.transaction((txn) async {
+      await txn.delete(User.tableName);
+      await txn.insert(User.tableName, user.toDb());
+    });
   }
 
-  Future<int> deleteUser(int id, {Transaction? txn}) async {
-    if (txn != null)
-      return await txn.delete(
-        User.tableName,
-        where: '${User.columnId} = ?',
-        whereArgs: [id],
-      );
-
-    return await _db.delete(
-      User.tableName,
-      where: '${User.columnId} = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<int> deleteAllUsers({Transaction? txn}) async {
-    if (txn != null) return await txn.delete(User.tableName);
-    return await _db.delete(User.tableName);
-  }
-
-  Future<int> updateUser(Map<String, dynamic> row, {Transaction? txn}) async {
-    if (txn != null)
-      return await txn.update(
-        User.tableName,
-        row,
-        where: '${User.columnId} = ?',
-        whereArgs: [row[User.columnId]],
-      );
-
-    return await _db.update(
-      User.tableName,
-      row,
-      where: '${User.columnId} = ?',
-      whereArgs: [row[User.columnId]],
-    );
-  }
+  Future<int> deleteAllUsers() => _db.delete(User.tableName);
 }

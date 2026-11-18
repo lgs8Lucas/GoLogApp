@@ -49,3 +49,8 @@ app.*.map.json
 .vscode/
 # Widget Preview related
 .widget_preview/
+
+# Artefatos locais que não devem ir para o repositório
+/http
+/golog.db/
+android/.kotlin/
