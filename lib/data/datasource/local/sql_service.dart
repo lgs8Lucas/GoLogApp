@@ -13,7 +13,7 @@ import 'package:sqflite/sqflite.dart';
 /// `await Get.putAsync(() => SqlService(...).init())` para que [db] já
 /// esteja aberto quando os demais serviços forem criados.
 class SqlService extends GetxService {
-  static const int _version = 9;
+  static const int _version = 10;
 
   final CredentialStore _credentialStore;
   late final Database db;
@@ -37,7 +37,7 @@ class SqlService extends GetxService {
   }
 
   // ---------------------------------------------------------------------
-  // Schema atual (v9)
+  // Schema atual (v10)
   // ---------------------------------------------------------------------
 
   static Future<void> _createSchema(DatabaseExecutor db) async {
@@ -72,7 +72,9 @@ class SqlService extends GetxService {
         ${Coordinate.columnData2} TEXT,
         ${Coordinate.columnDevice} TEXT,
         ${Coordinate.columnEquipmentId} TEXT,
-        ${Coordinate.columnIsSynced} INTEGER
+        ${Coordinate.columnIsSynced} INTEGER,
+        ${Coordinate.columnTransportId} TEXT,
+        ${Coordinate.columnShipmentId} TEXT
       )
     ''');
 
@@ -154,6 +156,7 @@ class SqlService extends GetxService {
 
   late final Map<int, Future<void> Function(DatabaseExecutor)> _migrations = {
     9: _migrateTo9,
+    10: _migrateTo10,
   };
 
   // O sqflite já executa onUpgrade dentro de uma transação: se qualquer
@@ -240,5 +243,28 @@ class SqlService extends GetxService {
     await _createTransport(txn);
 
     await _createIndexes(txn);
+  }
+
+  /// v10: coordinate guarda o transporte e o shipment em execução no
+  /// momento da coleta. Pontos antigos ficam com os dois nulos.
+  Future<void> _migrateTo10(DatabaseExecutor txn) async {
+    // Bancos vindos da v8 já passam pela v9 com o schema novo de
+    // coordinate; só adiciona as colunas que faltarem.
+    final columns = {
+      for (final c in await txn.rawQuery(
+        'PRAGMA table_info(${Coordinate.tableName})',
+      ))
+        c['name'] as String,
+    };
+    for (final column in [
+      Coordinate.columnTransportId,
+      Coordinate.columnShipmentId,
+    ]) {
+      if (!columns.contains(column)) {
+        await txn.execute(
+          'ALTER TABLE ${Coordinate.tableName} ADD COLUMN $column TEXT',
+        );
+      }
+    }
   }
 }

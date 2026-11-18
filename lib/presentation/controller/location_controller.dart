@@ -133,6 +133,10 @@ class LocationController extends GetxController with WidgetsBindingObserver {
 
     final active = _routeController.activeTransport;
     if (active == null) return;
+    // Só associa a parada se ela for da rota ativa e estiver em aberto.
+    final shipment = active.ongoingDelivery(
+      _routeController.activeDelivery?.id,
+    );
 
     _coordinateSqlService
         .insertCoordinate(
@@ -147,6 +151,8 @@ class LocationController extends GetxController with WidgetsBindingObserver {
             device: 'GoLogApp',
             equipmentId: active.equipmentId,
             isSynced: false,
+            transportId: active.id,
+            shipmentId: shipment?.id,
           ),
         )
         .catchError((Object e) {

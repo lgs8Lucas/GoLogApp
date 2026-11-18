@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'package:golog/data/datasource/local/occurrence_sql_service.dart';
 import 'package:golog/data/datasource/local/sql_service.dart';
 import 'package:golog/data/datasource/local/user_sql_service.dart';
 import 'package:golog/data/datasource/remote/api_service.dart';
+import 'package:golog/data/model/coordinate.dart';
 import 'package:golog/data/model/occurrence.dart';
 import 'package:golog/data/repository/sync_repository.dart';
 import 'package:http/http.dart' as http;
@@ -185,5 +187,44 @@ void main() {
       );
       expect(deleted, 0);
     });
+  });
+
+  test('telemetria envia transportId e shipmentId', () async {
+    final coordinates = CoordinateSqlService(sql.db);
+    Coordinate point({String? shipmentId}) => Coordinate(
+      dateTime: DateTime(2026, 11, 17, 10),
+      latitude: '-22.3',
+      longitude: '-47.3',
+      speed: 12.5,
+      alert: null,
+      data1: null,
+      data2: null,
+      device: 'GoLogApp',
+      equipmentId: 'e1',
+      isSynced: false,
+      transportId: 't1',
+      shipmentId: shipmentId,
+    );
+    await coordinates.insertCoordinate(point(shipmentId: 's1'));
+    // Deslocamento entre paradas: sem shipment.
+    await coordinates.insertCoordinate(point());
+
+    final bodies = <Map<String, dynamic>>[];
+    final r = repo((req) async {
+      if (req.url.path == '/telemetry') {
+        bodies.add(jsonDecode(req.body) as Map<String, dynamic>);
+      }
+      return http.Response('{}', 201);
+    });
+
+    await r.sync();
+    expect(bodies, hasLength(2));
+    expect(bodies[0]['transportId'], 't1');
+    expect(bodies[0]['shipmentId'], 's1');
+    expect(bodies[0]['equipamentId'], 'e1');
+    expect(bodies[1]['transportId'], 't1');
+    expect(bodies[1].containsKey('shipmentId'), isTrue);
+    expect(bodies[1]['shipmentId'], isNull);
+    expect(await coordinates.countUnsynced(), 0);
   });
 }

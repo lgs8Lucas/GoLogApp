@@ -49,6 +49,15 @@ class Transport {
   /// Paradas ainda não finalizadas.
   bool get hasPendingDeliveries => deliveries.any((d) => !d.isFinished);
 
+  /// A parada [deliveryId] desta rota, se ela ainda estiver em aberto.
+  Delivery? ongoingDelivery(String? deliveryId) {
+    if (deliveryId == null) return null;
+    for (final d in deliveries) {
+      if (d.id == deliveryId) return d.isFinished ? null : d;
+    }
+    return null;
+  }
+
   factory Transport.fromJson(Map<String, dynamic> json) {
     // As chaves `equipamentGroup`/`equipament1` seguem o contrato do backend.
     final equipmentGroup = JsonParse.toMap(json['equipamentGroup']);

@@ -11,6 +11,8 @@ class Coordinate {
   static const String columnDevice = 'device';
   static const String columnEquipmentId = 'equipmentId';
   static const String columnIsSynced = 'isSynced';
+  static const String columnShipmentId = 'shipmentId';
+  static const String columnTransportId = 'transportId';
 
   final int localId;
   final DateTime dateTime;
@@ -24,6 +26,13 @@ class Coordinate {
   final String equipmentId;
   final bool isSynced;
 
+  /// Transporte (rota) em execução quando o ponto foi coletado.
+  final String? transportId;
+
+  /// Shipment (parada) que o veículo estava realizando. Fica nulo no
+  /// deslocamento entre paradas, quando nenhuma está em andamento.
+  final String? shipmentId;
+
   Coordinate({
     this.localId = 0,
     required this.dateTime,
@@ -36,6 +45,8 @@ class Coordinate {
     required this.device,
     required this.equipmentId,
     required this.isSynced,
+    this.transportId,
+    this.shipmentId,
   });
 
   /// Corpo enviado para `/telemetry`. As chaves seguem o contrato do
@@ -51,6 +62,8 @@ class Coordinate {
       'data2': data2 ?? '.',
       'device': device,
       'equipamentId': equipmentId,
+      'transportId': transportId,
+      'shipmentId': shipmentId,
     };
   }
 
@@ -68,6 +81,8 @@ class Coordinate {
       columnDevice: device,
       columnEquipmentId: equipmentId,
       columnIsSynced: isSynced ? 1 : 0,
+      columnTransportId: transportId,
+      columnShipmentId: shipmentId,
     };
   }
 
@@ -84,6 +99,8 @@ class Coordinate {
       device: db[columnDevice] ?? '',
       equipmentId: db[columnEquipmentId] ?? '',
       isSynced: db[columnIsSynced] == 1,
+      transportId: db[columnTransportId],
+      shipmentId: db[columnShipmentId],
     );
   }
 }

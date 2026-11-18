@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:golog/data/model/coordinate.dart';
 import 'package:golog/data/model/delivery.dart';
 import 'package:golog/data/model/transport.dart';
 
@@ -86,5 +87,48 @@ void main() {
     final sorted = Delivery.sortedBySequence(original);
     expect(sorted.map((d) => d.deliverySequence), [1, 2, 3]);
     expect(original.map((d) => d.deliverySequence), [3, 1, 2]);
+  });
+
+  group('Transport.ongoingDelivery', () {
+    Transport route() {
+      final t = Transport.fromJson({'id': 't1'});
+      t.deliveries = [
+        Delivery.fromJson({'id': 'aberta', 'status': 'INICIADO'}),
+        Delivery.fromJson({'id': 'feita', 'status': 'FINALIZADO'}),
+      ];
+      return t;
+    }
+
+    test('devolve a parada em aberto', () {
+      expect(route().ongoingDelivery('aberta')?.id, 'aberta');
+    });
+
+    test('parada finalizada, de outra rota ou nula não conta', () {
+      expect(route().ongoingDelivery('feita'), isNull);
+      expect(route().ongoingDelivery('outra-rota'), isNull);
+      expect(route().ongoingDelivery(null), isNull);
+    });
+  });
+
+  test('Coordinate preserva transportId/shipmentId no banco', () {
+    final c = Coordinate(
+      dateTime: DateTime(2026, 11, 17, 10),
+      latitude: '-22.3',
+      longitude: '-47.3',
+      speed: null,
+      alert: null,
+      data1: null,
+      data2: null,
+      device: 'GoLogApp',
+      equipmentId: 'e1',
+      isSynced: false,
+      transportId: 't1',
+      shipmentId: 's1',
+    );
+    final back = Coordinate.fromDb({...c.toDb(), 'localId': 1});
+    expect(back.transportId, 't1');
+    expect(back.shipmentId, 's1');
+    expect(c.toJson()['shipmentId'], 's1');
+    expect(c.toJson()['transportId'], 't1');
   });
 }
