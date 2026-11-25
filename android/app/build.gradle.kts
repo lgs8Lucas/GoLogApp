@@ -99,5 +99,11 @@ flutter {
 }
 
 dependencies {
+    // Android Auto (Car App Library) e Navigation SDK: as versões acompanham
+    // as do google_navigation_flutter 0.12.1, que já as usa internamente;
+    // aqui são declaradas porque o código em br.com.golog.app.auto as importa.
+    implementation("androidx.car.app:app:1.7.0")
+    implementation("androidx.car.app:app-projected:1.7.0")
+    implementation("com.google.android.libraries.navigation:navigation:8.1.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.1.5")
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declara o GoLog como app do Android Auto baseado em templates
+     (Car App Library). A categoria (navegação) fica no intent-filter do
+     GoLogCarAppService, no AndroidManifest.xml. -->
+<automotiveApp>
+    <uses name="template" />
+</automotiveApp>

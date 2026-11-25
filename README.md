@@ -33,6 +33,53 @@ keyPassword=...
 Sem esse arquivo o release é assinado com a chave de debug (o build avisa) e
 não pode ser publicado.
 
+## Android Auto
+
+O GoLog aparece no Android Auto como **app de navegação** (Car App Library,
+categoria `NAVIGATION`). O carro não roda a UI Flutter: ele abre o
+`GoLogCarAppService` (`android/.../auto/`). A `GoLogCarScreen` desenha o mapa
+do Navigation SDK e mostra as manobras e o ETA da **mesma sessão de navegação**
+aberta no celular. Para isso usa o `AndroidAutoBaseScreen` do
+`google_navigation_flutter`.
+
+- A navegação começa no celular, ao abrir uma parada. O carro só espelha.
+  Sem parada aberta, ele mostra "Nenhuma entrega em andamento".
+- `lib/util/android_auto_bridge.dart` envia ao carro a parada atual e o aviso
+  de chegada. Também avisa o app quando o motorista encerra a navegação pelo
+  carro.
+- Registrar a entrega ou a ocorrência continua sendo feito só no celular. O
+  Android Auto não permite formulários nem assinatura.
+
+### Testando
+
+O Android Auto **esconde apps que não foram instalados pela Play Store**.
+A partir da versão 17, **"Fontes desconhecidas" não vale para apps da Car App
+Library** (template/navegação, como o GoLog). Só vale para apps de mídia.
+Também não adianta `adb install -i com.android.vending`: o Android Auto
+confere quem *iniciou* a instalação (`initiatingPackageName`), e pelo adb é
+sempre `com.android.shell`. O log mostra
+`CAR.VALIDATOR: Package DENIED; failed all other checks [br.com.golog.app]`.
+
+Caminhos que funcionam no carro:
+
+- **Play Console, teste interno** (recomendado): o app instalado pela Play
+  Store passa na validação.
+- **KingInstaller** (app de terceiros): pede ao instalador do sistema para
+  instalar com a Play Store como instaladora. Confira o resultado com
+  `adb shell dumpsys package br.com.golog.app | grep -E "installerPackageName|initiatingPackageName"`.
+  O esperado é `com.android.vending` e `com.google.android.packageinstaller`.
+  Toda atualização precisa ser instalada do mesmo jeito.
+
+Sem carro: o **Desktop Head Unit** aceita apps instalados fora da loja
+(`sdkmanager "extras;google;auto"`).
+  No Android Auto, abra ⋮ → *Iniciar servidor da unidade principal*. Depois
+  rode `adb forward tcp:5277 tcp:5277` e
+  `$ANDROID_HOME/extras/google/auto/desktop-head-unit`.
+
+Em builds release, só os hosts oficiais do Android Auto/Automotive são
+aceitos (`HostValidator`). Para publicar na Play Store, apps de navegação
+passam por uma revisão específica do Google para Android Auto.
+
 ## Estrutura
 
 ```

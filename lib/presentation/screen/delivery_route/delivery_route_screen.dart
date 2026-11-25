@@ -13,6 +13,7 @@ import 'package:golog/presentation/controller/route_controller.dart';
 import 'package:golog/presentation/screen/delivery_route/delivery_route_view.dart';
 import 'package:golog/presentation/screen/events/occurrence_screen.dart';
 import 'package:golog/presentation/widgets/map_placeholder.dart';
+import 'package:golog/util/android_auto_bridge.dart';
 import 'package:golog/util/format_utils.dart';
 import 'package:golog/util/styles.dart';
 
@@ -46,6 +47,7 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
   StreamSubscription<OnArrivalEvent>? _arrivalSub;
   StreamSubscription<RemainingTimeOrDistanceChangedEvent>? _remainingSub;
   StreamSubscription<void>? _reroutingSub;
+  StreamSubscription<void>? _autoStopSub;
 
   bool get _hasDestination {
     final d = controller.selectedDelivery;
@@ -66,6 +68,10 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
   void initState() {
     super.initState();
     _delivery = controller.selectedDelivery;
+    _announceDeliveryToCar();
+    _autoStopSub = AndroidAutoBridge.instance.onHostStopNavigation.listen(
+      (_) => _onCarStoppedNavigation(),
+    );
     _refreshOutcomeStatus();
     _startNavigation();
   }
@@ -78,6 +84,8 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
     _arrivalSub?.cancel();
     _remainingSub?.cancel();
     _reroutingSub?.cancel();
+    _autoStopSub?.cancel();
+    AndroidAutoBridge.instance.clear();
     // Encerra guidance, notificação e sessão ao sair da parada.
     if (_sessionReady) {
       GoogleMapsNavigator.cleanup().catchError((_) {});
@@ -305,6 +313,7 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
     _arrivalSub ??= GoogleMapsNavigator.setOnArrivalListener((event) async {
       HapticFeedback.mediumImpact();
       await GoogleMapsNavigator.stopGuidance().catchError((_) {});
+      AndroidAutoBridge.instance.arrived();
       _setNavigation(const NavigationState(phase: NavPhase.arrived));
     });
 
@@ -335,6 +344,34 @@ class _DeliveryRouteScreenState extends State<DeliveryRouteScreen> {
         backgroundColor: Styles.COLOR_BLACKBLUE,
       );
     });
+  }
+
+  // ---------------------------------------------------------------------
+  // Android Auto
+  // ---------------------------------------------------------------------
+
+  void _announceDeliveryToCar() {
+    final delivery = _delivery;
+    if (delivery == null) return;
+    final address = FormatUtils.address(delivery.destinationAddress);
+    AndroidAutoBridge.instance.showDelivery(
+      title: FormatUtils.orFallback(delivery.recipientName, address),
+      address: address,
+    );
+  }
+
+  // O motorista encerrou a navegação pelo carro: o guidance já foi parado no
+  // nativo; o celular só reflete isso e oferece retomar.
+  void _onCarStoppedNavigation() {
+    if (_navigation.phase != NavPhase.navigating) return;
+    _unavailable(
+      'Navegação encerrada pelo Android Auto.',
+      actionLabel: 'Retomar',
+      onAction: () {
+        _announceDeliveryToCar();
+        _retryRoute();
+      },
+    );
   }
 
   String _routeStatusMessage(NavigationRouteStatus status) {
